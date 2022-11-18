@@ -1,7 +1,7 @@
 universe = vanilla
 executable              = run.sh
 arguments               = 
-log                     = condor_logs/out.log
+log                     = condor_logs/logfile.$(Cluster).$(Process).log
 output                  = condor_logs/outfile.$(Cluster).$(Process).out
 error                   = condor_logs/errors.$(Cluster).$(Process).err
 
