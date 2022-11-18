@@ -1,7 +1,7 @@
 universe = vanilla
-executable              = destruction_augment.sh
+executable              = run.sh
 arguments               = 
-log                     = condor_logs/test.log
+log                     = condor_logs/out.log
 output                  = condor_logs/outfile.$(Cluster).$(Process).out
 error                   = condor_logs/errors.$(Cluster).$(Process).err
 
