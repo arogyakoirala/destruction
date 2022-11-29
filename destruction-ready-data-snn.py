@@ -10,6 +10,8 @@ parser.add_argument('--window_size', help="Size of window (comma separated, eg: 
 parser.add_argument("--dataset", help="One of: test, train, validate, all")
 parser.add_argument('--balance', default=False, action="store_true", help="Balance (upsample) positives in data?")
 parser.add_argument("--patch_size", help="Patch Size")
+parser.add_argument("--downsample_factor", help="Downsampling factor (default = 1)")
+parser.add_argument('--hog', default=False, action="store_true", help="Use HOGs instaed of original image?")
 
 args = parser.parse_args()
 
@@ -30,6 +32,10 @@ WINDOW_SIZE = (20,20)
 DATASET = 'all'
 BALANCE=False
 TILE_SIZE = (128,128)
+HOG = False
+
+XOFFSET = 85
+YOFFSET = -45
 
 if args.city:
     CITY=args.city
@@ -55,13 +61,17 @@ if args.balance:
 if args.patch_size:
     TILE_SIZE = [int(el.strip()) for el in args.patch_size.split(",")]
 
-print(f"Parameters: city={CITY}, data_dir={DATA_DIR}, pre_image_index={PRE_IMAGE_INDEX}, window={WINDOW}, window_size={WINDOW_SIZE}, dataset={DATASET}, balance={BALANCE}, tile_size={TILE_SIZE}")
+if args.hog:
+    HOG = args.hog
+
+print(f"Parameters: city={CITY}, data_dir={DATA_DIR}, pre_image_index={PRE_IMAGE_INDEX}, window={WINDOW}, window_size={WINDOW_SIZE}, dataset={DATASET}, balance={BALANCE}, tile_size={TILE_SIZE}, hog={HOG}")
 
 if WINDOW:
-    window = utils.center_window(f'{DATA_DIR}/{CITY}/others/{CITY}_samples.tif', (WINDOW_SIZE[0]*1, WINDOW_SIZE[1]*1))
+    window = utils.center_window(f'{DATA_DIR}/{CITY}/others/{CITY}_samples.tif', (WINDOW_SIZE[0]*1, WINDOW_SIZE[1]*1), (1,1), xoffset=XOFFSET, yoffset=YOFFSET)
     samples = utils.read_raster(f'{DATA_DIR}/{CITY}/others/{CITY}_samples.tif', window=window)
 else:
     samples = utils.read_raster(f'{DATA_DIR}/{CITY}/others/{CITY}_samples.tif')
+
 images  = utils.search_data(utils.pattern(city=CITY, type='image'), directory=DATA_DIR)
 labels  = utils.search_data(utils.pattern(city=CITY, type='label'), directory=DATA_DIR)
 
@@ -96,17 +106,23 @@ images = sorted(images)
 for j, pre_image_index in enumerate(PRE_IMAGE_INDEX):
     print(f'------ Using pre image #{j+1}..')
     if WINDOW:
-        window = utils.center_window(images[pre_image_index], (WINDOW_SIZE[0]*TILE_SIZE[0], WINDOW_SIZE[1]*TILE_SIZE[1]))
+        window = utils.center_window(images[pre_image_index], 
+            (WINDOW_SIZE[0]*TILE_SIZE[0], WINDOW_SIZE[1]*TILE_SIZE[1]), TILE_SIZE,
+                xoffset=XOFFSET, yoffset=YOFFSET)
         pre_image = utils.read_raster(images[pre_image_index], window=window)
     else:
         pre_image = utils.read_raster(images[pre_image_index])
+    
+    if HOG:
+        pre_image = utils.get_hog(pre_image)
     
     pre_image = utils.tile_sequences(np.array([pre_image]), TILE_SIZE)
     
     for i in range(len(images)):
         if i not in PRE_IMAGE_INDEX:
             if WINDOW:
-                window = utils.center_window(labels[i], (WINDOW_SIZE[0]*1, WINDOW_SIZE[1]*1))
+                window = utils.center_window(labels[i], (WINDOW_SIZE[0]*1, WINDOW_SIZE[1]*1), TILE_SIZE,
+                    xoffset=XOFFSET, yoffset=YOFFSET)
                 label = np.array(utils.read_raster(labels[i], window=window))
             else:
                 label = np.array(utils.read_raster(labels[i]))
@@ -125,10 +141,14 @@ for j, pre_image_index in enumerate(PRE_IMAGE_INDEX):
 
             
             if WINDOW:
-                window = utils.center_window(images[i], (WINDOW_SIZE[0]*TILE_SIZE[0], WINDOW_SIZE[1]*TILE_SIZE[1]))
+                window = utils.center_window(images[i], (WINDOW_SIZE[0]*TILE_SIZE[0], WINDOW_SIZE[1]*TILE_SIZE[1]), TILE_SIZE, xoffset=XOFFSET, yoffset=YOFFSET)
                 image = np.array(utils.read_raster(images[i], window=window))
             else:
                 image = np.array(utils.read_raster(images[i]))
+
+            if HOG:
+                image = utils.get_hog(image)
+
             image = utils.tile_sequences(np.array([image]), TILE_SIZE)
             image = np.delete(image, exclude, 0)
             _, image_train, image_test, image_valid = utils.sample_split(image, samples_valid)

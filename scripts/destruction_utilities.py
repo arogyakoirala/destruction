@@ -11,7 +11,8 @@ import random
 import gc
 import shutil
 from tensorflow.keras.utils import Sequence
-
+import cv2
+from skimage.feature import hog
 
 # Raster Stuff
 def tiled_profile(source:str, tile_size:tuple=(128,128,1)) -> dict:
@@ -39,9 +40,10 @@ def rasterise(source, profile, attribute:str=None, dtype:str='float32') -> np.nd
     image = image.astype(dtype)
     return image
 
-def display(image:np.ndarray, title:str='', cmap:str='gray') -> None:
+def display(image:np.ndarray, title:str='', cmap:str='gray', ax=None) -> None:
     '''Displays an image'''
-    fig, ax = pyplot.subplots(1, figsize=(10, 10))
+    if ax==None:
+        fig, ax = pyplot.subplots(1, figsize=(10, 10))
     ax.imshow(image, cmap=cmap)
     ax.set_title(title, fontsize=20)
 #     ax.legend(loc="upper left")
@@ -98,13 +100,15 @@ def extract(files:list, pattern:str='\d{4}-\d{2}-\d{2}') -> list:
     match   = [pattern.search(file).group() for file in files]
     return match
 
-def center_window(source:str, size:dict):
+def center_window(source:str, size:dict, tile_size:dict=(128,128), xoffset:int=0, yoffset:int=0):
     '''Computes the windows for the centre of a raster'''
     profile = rasterio.open(source).profile
-    centre  = (profile['width'] // 2, profile['height'] // 2)
+    xoffset = xoffset * tile_size[0]
+    yoffset = yoffset * tile_size[1]
+    centre  = ((profile['width'] // 2), (profile['height'] // 2))
     window  = windows.Window.from_slices(
-        (centre[0] - size[0] // 2, centre[0] + size[0] // 2),
-        (centre[1] - size[1] // 2, centre[1] + size[1] // 2)
+        (centre[0] - (size[0] // 2) + yoffset, centre[0] + size[0] // 2 + yoffset),
+        (centre[1] - size[1] // 2 + xoffset, centre[1] + size[1] // 2 + xoffset)
     )
     return window
 
@@ -519,3 +523,15 @@ class CNNGenerator(Sequence):
         X = X * alpha
         
         return X
+
+def downsample(image, factor):
+    image = cv2.GaussianBlur(image, (0, 0), 1, 1) # Blur with Gaussian kernel of width sigma=1
+    image = cv2.resize(image, (0, 0), fx=1.0/factor, fy=1.0/factor, 
+                           interpolation=cv2.INTER_CUBIC) # Downsample image by factor
+    return image
+
+def get_hog(image):
+    image = np.float32(image)
+    _, image = hog(image, orientations=9, pixels_per_cell=(2,2),
+                	cells_per_block=(8, 8), channel_axis=2, visualize=True)
+    return image        
