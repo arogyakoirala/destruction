@@ -6,7 +6,7 @@ args = parser.parse_args()
 SUFFIX = 'hog'
 CITY = 'aleppo_cropped'
 DATA_DIR = "../../../data"
-PERC_VARIANCE = 0.95
+PERC_VARIANCE = 0.75
 
 if args.suffix:
     SUFFIX = args.suffix 
@@ -75,13 +75,13 @@ print(images_tr.shape)
 
 images_std, mu, sigma = standardize(images_all, full=True)
 # print(images_std.shape)
-pca = PCA(n_components=1000)
+pca = PCA(n_components=1500)
 pca.fit(images_std)
 n, perc = min(enumerate(pca.explained_variance_ratio_.cumsum()), key=lambda x: abs(x[1]-PERC_VARIANCE))
 print(f"Number of principal components explaining {100*PERC_VARIANCE}% of variance: {n}, {perc}")
 
 fig, ax = plt.subplots(1,1,figsize=(15,3), dpi=200)
-sns.lineplot(x=range(1, 257), y=pca.explained_variance_ratio_.cumsum(), ax=ax);
+sns.lineplot(x=range(1, 1001), y=pca.explained_variance_ratio_.cumsum(), ax=ax);
 fig.suptitle('Total Variation Explained by Number of PCA Components', fontsize='xx-large')
 ax.set_xlabel('Number of Components', fontsize='x-large')
 ax.set_ylabel('% Variation Explained', fontsize='x-large')

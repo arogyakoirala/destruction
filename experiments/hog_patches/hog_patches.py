@@ -78,7 +78,6 @@ def parallel_block_handler(blocks, images, suffix):
 
 
 def save_patches_parallel(images, bls, suffix):
-    print(bls)
     parent_chunks = np.array_split(blocks, N_CORES)
     pool = mp.Pool(processes=N_CORES)
     chunk_processes = [pool.apply_async(parallel_block_handler, args=(chunk, images, suffix)) for chunk in parent_chunks]
