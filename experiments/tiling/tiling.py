@@ -144,5 +144,7 @@ for i, image in enumerate(images):
     save_zarr(city=CITY, data=label_va, suffix="la_va", path=DATA_DIR)
     save_zarr(city=CITY, data=label_te, suffix="la_te", path=DATA_DIR)
 
+    print(f"Train, Test, Validate: {label_tr.shape}, {label_te.shape}, {label_va.shape}")
+
 
 
