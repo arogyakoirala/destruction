@@ -75,7 +75,7 @@ print(images_tr.shape)
 
 images_std, mu, sigma = standardize(images_all, full=True)
 # print(images_std.shape)
-pca = PCA(n_components=256)
+pca = PCA(n_components=1000)
 pca.fit(images_std)
 n, perc = min(enumerate(pca.explained_variance_ratio_.cumsum()), key=lambda x: abs(x[1]-PERC_VARIANCE))
 print(f"Number of principal components explaining {100*PERC_VARIANCE}% of variance: {n}, {perc}")

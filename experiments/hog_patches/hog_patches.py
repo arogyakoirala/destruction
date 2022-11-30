@@ -38,7 +38,8 @@ def get_hog_patches(images):
     encodings = None
 
     for i, im in enumerate(images):
-        print(i)
+        if i%1000==0:
+            print(i)
         _, image = get_hog(im)
         if encodings is None:
             encodings = np.empty((0, _.shape[0]))
