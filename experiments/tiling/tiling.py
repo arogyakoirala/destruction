@@ -122,6 +122,8 @@ for i, image in enumerate(images):
     label = np.delete(label, unc, 0)
 
 
+    print(image)
+
     # Flatten and reshape
     image = read_raster(image)
     image = tile_sequences(np.array([image]))
@@ -141,5 +143,6 @@ for i, image in enumerate(images):
     save_zarr(city=CITY, data=label_tr, suffix="la_tr", path=DATA_DIR)
     save_zarr(city=CITY, data=label_va, suffix="la_va", path=DATA_DIR)
     save_zarr(city=CITY, data=label_te, suffix="la_te", path=DATA_DIR)
+
 
 
