@@ -1,6 +1,6 @@
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--suffix", "Suffix")
+parser.add_argument("--suffix", help="Suffix")
 args = parser.parse_args()
 
 SUFFIX = 'hog'
