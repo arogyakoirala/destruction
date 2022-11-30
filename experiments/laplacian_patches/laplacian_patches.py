@@ -60,9 +60,10 @@ def gaussian_and_laplacian_stack(img, levels):
     laplacian_stack.append(gaussian_stack[levels-1])
         
     return (gaussian_stack, laplacian_stack)
-def rgb2gray(rgb):
-    return np.dot(rgb[...,:3], [0.299, 0.587, 0.144])
 
+def rgb2gray(rgb):
+    # print(rgb)
+    return np.dot(rgb[...,:3], [0.299, 0.587, 0.144])
 
 
 # Creates an nd array of the first laplacian feature images of the input nd images array 
@@ -70,11 +71,14 @@ def get_laplacian(z_images,levels):
     """Returns a zarr file of the first gray image from the laplacian stage for all images in the
     original zarr file"""
     
+    print("Greyscaling...")
     images_gray = rgb2gray(z_images)
     # print(f'The shape of {z_images} zarr file after rgb2gray conversion is {images_gray.shape}')
     lap_zarr = []
-    
-    for img in images_gray:
+    print("Done greyscaling, building laplacian stack...")
+    for i, img in enumerate(images_gray):
+        if i%100 == 0:
+            print(i)
         gs, ls = gaussian_and_laplacian_stack(img, levels)
         lap_zarr.append(ls[0])
         
