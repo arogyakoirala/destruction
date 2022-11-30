@@ -129,12 +129,12 @@ for col in post_cols:
                 
 # Backfill the zeros
 filled = []
-last_known_date = None
+# last_known_date = None
 for j, col in enumerate(post_cols):
     zeros = list(*np.where(damage[col] == 0.0))
     cols_before_date = [c for c in post_cols if time.strptime(c, "%Y-%m-%d")  < time.strptime(col, "%Y-%m-%d") ]
     for i, date in enumerate(cols_before_date):       
-        if date not in filled and date not in known_dates:
+        if date not in filled and date not in known_dates and time.strptime(date, "%Y-%m-%d") < time.strptime(last_annotation_date, "%Y-%m-%d"):
             zeros = list(*np.where(damage[col] == 0.0))
             uncertains = list(*np.where(damage[date] != -1))
             n_uncertains = list(set(zeros).intersection(set(uncertains)))
@@ -144,6 +144,7 @@ for j, col in enumerate(post_cols):
 # Label the uncertain class everywhere now
 geometry = damage.geometry
 damage_ = damage.drop('geometry', axis=1)
+damage_['end'] = damage[last_annotation_date]
 damage_ = damage_.T
 for col in damage_.columns:
     uncertains = np.where(damage_[col].fillna(method='ffill') != damage_[col].fillna(method='bfill'))
@@ -158,6 +159,7 @@ damage_ = damage.drop('geometry', axis=1)
 damage_ = damage_.T
 damage_ = damage_.fillna(method='ffill')
 damage = damage_.T
+damage = damage.drop('end', axis=1)
 damage['geometry'] = geometry
 damage = geopandas.GeoDataFrame(damage)
 
@@ -165,6 +167,7 @@ damage = geopandas.GeoDataFrame(damage)
 for date in damage.drop('geometry', axis=1).columns:
     print(f'------ {date}')
     subset = damage[[date, 'geometry']].sort_values(by=date) # Sorting takes the max per pixel
+    subset[date] = np.where(subset[date] < 3, 0, 1)
     subset = rasterise(subset, profile, date)
     write_raster(subset, profile, f'{DATA_DIR}/{CITY}/labels/label_{date}.tif', nodata=-1, dtype='int8')
 del date, subset

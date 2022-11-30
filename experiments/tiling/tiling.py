@@ -5,12 +5,12 @@ import re
 import time 
 import random
 import zarr
+import shutil
 
 CITY = 'aleppo_cropped'
 DATA_DIR = "../../../data"
 TILE_SIZE = (128,128)
-# image = '../hogs/image_2015_04_26.tif'
-# label = '../../../data/aleppo_cropped/labels/label_2015-04-26.tif'
+
 
 def search_data(pattern:str='.*', directory:str='../data') -> list:
     '''Sorted list of files in a directory matching a regular expression'''
@@ -70,6 +70,11 @@ def save_zarr(data, city, suffix, path="../data"):
         za = zarr.open(path, mode='a')
         za.append(data)
 
+def delete_zarr_if_exists(city, suffix, path="../data"):
+    path = f'{path}/{city}/others/{city}_{suffix}.zarr'
+    if os.path.exists(path):
+        shutil.rmtree(path)
+
 images  = search_data(pattern(city=CITY, type='image'), directory=DATA_DIR)
 labels  = search_data(pattern(city=CITY, type='label'), directory=DATA_DIR)
 samples = read_raster(f'{DATA_DIR}/{CITY}/others/{CITY}_samples.tif')
@@ -81,6 +86,8 @@ label_dates = sorted([el.split("label_")[1].split('.tif')[0] for el in labels])
 
 # print(image_dates)
 # print(label_dates)
+
+
 
 remove = []
 for la in label_dates:
@@ -96,6 +103,9 @@ for i, dt in enumerate(label_dates):
 label_dates = sorted(_)
 # print(len(image_dates), len(label_dates))
 
+suffixes = ["im_tr", "im_va", "im_te", "la_tr", "la_va","la_te"]
+for s in suffixes:
+    delete_zarr_if_exists(CITY, s, DATA_DIR)
 
 empty = np.empty((0, TILE_SIZE[0]*TILE_SIZE[1]))
 images_tr = images_va = images_te = empty
@@ -109,26 +119,20 @@ for i, image in enumerate(images):
     label = np.squeeze(label.flatten())
 
     unc = np.where(label == -1)
+    label = np.delete(label, unc, 0)
 
 
     # Flatten and reshape
     image = read_raster(image)
-
     image = tile_sequences(np.array([image]))
     image = np.squeeze(image)
-    print(image.shape)
+    image = np.delete(image, unc, 0)
     n, r, c, b = image.shape
-    # image = image.reshape(n, r*c)
 
-    # Sample split
-    # _, image_tr, image_va, image_te = sample_split(image, samples.flatten())
-    # _, label_tr, label_va, label_te = sample_split(label, samples.flatten())
-    image_tr, image_va, image_te = sample_split(image, samples.flatten()) # for smaller samples there is no noanalysis class
-    label_tr, label_va, label_te = sample_split(label, samples.flatten())
-    # print(image_tr.shape)  
-    # print(image_va.shape)  
-    # print(image_te.shape)  
-
+    # assign to test, train, validate
+    samples_min_unc = np.delete(samples.flatten(), unc)
+    image_tr, image_va, image_te = sample_split(image, samples_min_unc) # for smaller samples there is no noanalysis class
+    label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
 
     save_zarr(city=CITY, data=image_tr, suffix="im_tr", path=DATA_DIR)
     save_zarr(city=CITY, data=image_va, suffix="im_va", path=DATA_DIR)
