@@ -131,8 +131,8 @@ for i, image in enumerate(images):
 
     # assign to test, train, validate
     samples_min_unc = np.delete(samples.flatten(), unc)
-    image_tr, image_va, image_te = sample_split(image, samples_min_unc) # for smaller samples there is no noanalysis class
-    label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
+    _, image_tr, image_va, image_te = sample_split(image, samples_min_unc) # for smaller samples there is no noanalysis class
+    _, label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
 
     save_zarr(city=CITY, data=image_tr, suffix="im_tr", path=DATA_DIR)
     save_zarr(city=CITY, data=image_va, suffix="im_va", path=DATA_DIR)

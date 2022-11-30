@@ -1,3 +1,16 @@
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--suffix", "Suffix")
+args = parser.parse_args()
+
+SUFFIX = 'hog'
+CITY = 'aleppo_cropped'
+DATA_DIR = "../../../data"
+PERC_VARIANCE = 0.95
+
+if args.suffix:
+    SUFFIX = args.suffix 
+
 import os
 import zarr
 from sklearn.decomposition import PCA
@@ -6,10 +19,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import shutil
 
-SUFFIX = 'hog'
-CITY = 'aleppo_cropped'
-DATA_DIR = "../../../data"
-PERC_VARIANCE = 0.95
 
 def read_zarr(city, suffix, path="../data"):
     path = f'{path}/{city}/others/{city}_{suffix}.zarr'

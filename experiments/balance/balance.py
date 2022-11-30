@@ -7,7 +7,7 @@ import random
 # SUFFIX = 'im_tr'
 CITY = 'aleppo_cropped'
 DATA_DIR = "../../../data"
-BLOCK_SIZE = 10
+BLOCK_SIZE = 10000
 
 def read_zarr(city, suffix, path="../data"):
     path = f'{path}/{city}/others/{city}_{suffix}.zarr'

@@ -1,18 +1,24 @@
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--suffix", "Suffix")
+args = parser.parse_args()
+
+SUFFIX = 'hog'
+CITY = 'aleppo_cropped'
+DATA_DIR = "../../../data"
+
+if args.suffix:
+    SUFFIX = args.suffix 
+
+
 from matplotlib import cm
 import numpy as np
-from sklearn import datasets
 from sklearn.manifold import TSNE
 import zarr
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
-# load data
-digits = datasets.load_digits()
 
-
-SUFFIX = 'pca_hog'
-CITY = 'aleppo_cropped'
-DATA_DIR = "../../../data"
 
 def read_zarr(city, suffix, path="../data"):
     path = f'{path}/{city}/others/{city}_{suffix}.zarr'

@@ -4,9 +4,9 @@ from rasterio import features, windows
 import numpy as np
 
 TILE_SIZE = (128, 128)
-WINDOW_SIZE = (5,5)
-# XOFFSET = 85
-# YOFFSET = -45
+WINDOW_SIZE = (75,75)
+# XOFFSET = 65
+# YOFFSET = -65
 # XOFFSET = 60 5by5
 # YOFFSET = -60
 XOFFSET = 0

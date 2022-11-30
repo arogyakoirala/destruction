@@ -15,9 +15,10 @@ def correct(image):
     destination  = f'{os.getcwd()}/{image}'.split(".tif")[0]+".bsq"
     if os.path.exists(destination):
         os.remove(destination)
-    # CR = COREG(im_reference, im_target, path_out=destination, wp=(37.179159,36.194390), max_iter=25000, fmt_out='ENVI', max_shift=100)
+    # CR = COREG(im_reference, im_target, path_out=destination, wp=(37.179159,36.194390), max_iter=5000, fmt_out='ENVI', max_shift=200)
+    CR = COREG(im_reference, im_target, path_out=destination, wp=(37.193497,36.200088), max_iter=5000, fmt_out='ENVI', max_shift=200)
     # CR = COREG(im_reference, im_target, path_out=destination, wp=(37.173773,36.210160), max_iter=25000, fmt_out='ENVI', max_shift=200) # 5x5
-    CR = COREG(im_reference, im_target, path_out=destination, wp=(37.174130,36.210142), max_iter=25000, fmt_out='ENVI', max_shift=200) # 5x5
+    # CR = COREG(im_reference, im_target, path_out=destination, wp=(37.174130,36.210142), max_iter=25000, fmt_out='ENVI', max_shift=200) # 5x5
     try:
         CR.calculate_spatial_shifts()
         CR.correct_shifts()
@@ -43,7 +44,8 @@ for image in failures:
                 print("Trying with:", source)
                 if os.path.exists(destination):
                     os.remove(destination)
-                CR = COREG(im_reference, im_target, path_out=destination, wp=(37.193485,36.199957), max_iter=500, fmt_out='ENVI', max_shift=200)
+                # CR = COREG(im_reference, im_target, path_out=destination, wp=(37.193485,36.199957), max_iter=1000, fmt_out='ENVI', max_shift=500)
+                CR = COREG(im_reference, im_target, path_out=destination, wp=(37.193497,36.200088), max_iter=1000, fmt_out='ENVI', max_shift=500)
                 CR.calculate_spatial_shifts()
                 CR.correct_shifts()
                 complete=True
