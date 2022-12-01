@@ -11,8 +11,8 @@ import multiprocessing as mp
 CITY = "aleppo_cropped"
 TILE_SIZE = (128,128)
 DATA_DIR = "../../../data"
-N_CORES = 1
-BLOCK_SIZE = 1000
+N_CORES = 2
+BLOCK_SIZE = 30
 
 def make_tuple_pair(n, step_size):
     if step_size > n:
@@ -63,7 +63,7 @@ def get_hog_patches(images):
     encodings = None
 
     for i, im in enumerate(images):
-        if i%100==0:
+        if i%10==0:
             print(i)
         _, image = get_hog(im)
         if encodings is None:
@@ -94,13 +94,13 @@ def save_patches_parallel(images_pre, images_post, blocks, suffix):
     chunk_processes = [pool.apply_async(parallel_block_handler, args=(chunk, images_pre, images_post, suffix)) for chunk in parent_chunks]
     chunk_results = [chunk.get() for chunk in chunk_processes]
 
-suffixes = ["hog_tr_pre", "hog_va_pre", "hog_te_pre", "hog_tr_post", "hog_va_post", "hog_te_post"]
-# suffixes = [f"{SUFFIX}_snn_tr", f"{SUFFIX}_snn_va", f"{SUFFIX}_snn_te", "la_snn_tr", "la_snn_va","la_snn_te"]
-for s in suffixes:
-    delete_zarr_if_exists(CITY, s, DATA_DIR)
 
 if __name__ == '__main__':
     
+    suffixes = ["hog_tr_pre", "hog_va_pre", "hog_te_pre", "hog_tr_post", "hog_va_post", "hog_te_post"]
+    # suffixes = [f"{SUFFIX}_snn_tr", f"{SUFFIX}_snn_va", f"{SUFFIX}_snn_te", "la_snn_tr", "la_snn_va","la_snn_te"]
+    for s in suffixes:
+        delete_zarr_if_exists(CITY, s, DATA_DIR)
 
     images_tr_pre = read_zarr('aleppo_cropped', 'im_tr_pre', DATA_DIR)
     images_tr_post = read_zarr('aleppo_cropped', 'im_tr_post', DATA_DIR)

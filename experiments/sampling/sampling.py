@@ -80,7 +80,7 @@ def write_raster(array:np.ndarray, profile, destination:str, nodata:int=None, dt
 # Generate samples if REFRESH_SAMPLES=True
 if REFRESH_SAMPLE:
     # Splits samples
-    np.random.seed(1)
+    np.random.seed(42)
     index   = dict(training=0.70, validation=0.15, test=0.15)
     index   = np.random.choice(np.arange(len(index)) + 1, np.sum(analysis), p=list(index.values()))
     samples = analysis.astype(int)
