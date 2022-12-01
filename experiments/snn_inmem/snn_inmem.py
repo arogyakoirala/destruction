@@ -274,6 +274,9 @@ gen_te= SiameseGenerator((im_te_pre, im_te_post), la_te, train=False)
 yhat_proba, y = np.squeeze(best_model.predict(gen_te)), np.squeeze(la_te[0:(len(la_te)//BATCH_SIZE)*BATCH_SIZE])
 yhat = np.where(yhat_proba < 0.5, 0, 1)
 
+print(classification_report(y, yhat))
+
+
 roc_auc_test = roc_auc_score(y, yhat_proba)
 #calculate precision and recall
 precision, recall, thresholds = precision_recall_curve(y, yhat_proba)
@@ -282,7 +285,6 @@ precision, recall, thresholds = precision_recall_curve(y, yhat_proba)
 # r_score = recall_score(y, yhat_proba)
 # plot_roc_curve(fpr, tpr)
 
-print(classification_report(y, yhat))
 
 #create precision recall curve
 fig, ax = plt.subplots()
