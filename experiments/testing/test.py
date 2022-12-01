@@ -17,11 +17,11 @@ orig = "aleppo_damage.gpkg"
 # # print(copy.describe())
 
 
-# CITY = 'aleppo_cropped'
+CITY = 'aleppo_cropped'
 # SUFFIX = 'hog'
 # BANDS = 1
 # N_BANDS = 3
-# DATA_DIR = "../../../data"
+DATA_DIR = "../../../data"
 # MODEL_DIR = "../../../models"
 # BATCH_SIZE = 32
 # PATCH_SIZE = (128,128)
