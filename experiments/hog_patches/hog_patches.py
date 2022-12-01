@@ -12,7 +12,7 @@ CITY = "aleppo_cropped"
 TILE_SIZE = (128,128)
 DATA_DIR = "../../../data"
 N_CORES = 1
-BLOCK_SIZE = 100
+BLOCK_SIZE = 10
 
 def make_tuple_pair(n, step_size):
     if step_size > n:
@@ -35,6 +35,7 @@ def read_zarr(city, suffix, path="../data"):
 
 def save_zarr(data, city, suffix, path="../data"):
     path = f'{path}/{city}/others/{city}_{suffix}.zarr'
+    print(data.shape, path)
     # if os.path.exists(path):
     #     shutil.rmtree(path)
     if not os.path.exists(path):
