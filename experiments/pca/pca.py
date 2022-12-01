@@ -83,11 +83,11 @@ print(images_tr.shape)
 
 images_std, mu, sigma = standardize(images_all, full=True)
 # print(images_std.shape)
-k=min(len(images_std), 1500)
+k=min(len(images_std), 500)
 pca = PCA(n_components=k)
 pca.fit(images_std)
 n, perc = min(enumerate(pca.explained_variance_ratio_.cumsum()), key=lambda x: abs(x[1]-PERC_VARIANCE))
-print(f"Number of principal components explaining ~{100*PERC_VARIANCE}% of variance: {n}, {perc}")
+print(f"{n} principal components explain ~{100*perc.astype(int)}% of variance")
 
 fig, ax = plt.subplots(1,1,figsize=(15,3), dpi=200)
 sns.lineplot(x=range(1, k+1), y=pca.explained_variance_ratio_.cumsum(), ax=ax);
