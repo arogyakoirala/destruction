@@ -11,8 +11,8 @@ import multiprocessing as mp
 CITY = "aleppo_cropped"
 TILE_SIZE = (128,128)
 DATA_DIR = "../../../data"
-N_CORES = 2
-BLOCK_SIZE = 30
+N_CORES = 30
+BLOCK_SIZE = 1000
 
 def make_tuple_pair(n, step_size):
     if step_size > n:
@@ -63,7 +63,7 @@ def get_hog_patches(images):
     encodings = None
 
     for i, im in enumerate(images):
-        if i%10==0:
+        if i%100==0:
             print(i)
         _, image = get_hog(im)
         if encodings is None:
