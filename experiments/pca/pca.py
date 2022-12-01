@@ -20,6 +20,7 @@ import seaborn as sns
 import shutil
 
 
+
 def read_zarr(city, suffix, path="../data"):
     path = f'{path}/{city}/others/{city}_{suffix}.zarr'
     return zarr.open(path)
@@ -47,7 +48,14 @@ def save_zarr(data, city, suffix, path="../data"):
     # else:
         # za = zarr.open(path, mode='a')
         # za.append(data)
+def delete_zarr_if_exists(city, suffix, path="../data"):
+    path = f'{path}/{city}/others/{city}_{suffix}.zarr'
+    if os.path.exists(path):
+        shutil.rmtree(path)
 
+suffixes = [f"pca_{SUFFIX}_tr",f"pca_{SUFFIX}_va",f"pca_{SUFFIX}_te"]
+for s in suffixes:
+    delete_zarr_if_exists(CITY, s, DATA_DIR)
 
 
 images_tr = read_zarr(CITY, f"{SUFFIX}_tr_post", DATA_DIR)[:]
@@ -75,13 +83,14 @@ print(images_tr.shape)
 
 images_std, mu, sigma = standardize(images_all, full=True)
 # print(images_std.shape)
-pca = PCA(n_components=1500)
+k=min(len(images_std), 1500)
+pca = PCA(n_components=k)
 pca.fit(images_std)
 n, perc = min(enumerate(pca.explained_variance_ratio_.cumsum()), key=lambda x: abs(x[1]-PERC_VARIANCE))
-print(f"Number of principal components explaining {100*PERC_VARIANCE}% of variance: {n}, {perc}")
+print(f"Number of principal components explaining ~{100*PERC_VARIANCE}% of variance: {n}, {perc}")
 
 fig, ax = plt.subplots(1,1,figsize=(15,3), dpi=200)
-sns.lineplot(x=range(1, 1001), y=pca.explained_variance_ratio_.cumsum(), ax=ax);
+sns.lineplot(x=range(1, k+1), y=pca.explained_variance_ratio_.cumsum(), ax=ax);
 fig.suptitle('Total Variation Explained by Number of PCA Components', fontsize='xx-large')
 ax.set_xlabel('Number of Components', fontsize='x-large')
 ax.set_ylabel('% Variation Explained', fontsize='x-large')
@@ -93,23 +102,23 @@ plt.savefig(f"{SUFFIX}_pca_var_plot.png")
 
 images_tr = standardize(images_tr, mu, sigma)
 pcas = pca.transform(images_tr)
-pcas[:, -(280-n):] = 0
+pcas[:, -(k-n):] = 0
 save_zarr(city=CITY, data=pcas, suffix=f"pca_{SUFFIX}_tr", path=DATA_DIR)
 
 images_va = standardize(images_va, mu, sigma)
 pcas = pca.transform(images_va)
-pcas[:, -(280-n):] = 0
+pcas[:, -(k-n):] = 0
 save_zarr(city=CITY, data=pcas, suffix=f"pca_{SUFFIX}_va", path=DATA_DIR)
 
 images_te = standardize(images_te, mu, sigma)
 pcas = pca.transform(images_te)
-pcas[:, -(280-n):] = 0
+pcas[:, -(k-n):] = 0
 save_zarr(city=CITY, data=pcas, suffix=f"pca_{SUFFIX}_te", path=DATA_DIR)
 
 fig,ax = plt.subplots(2,5,sharex=True,sharey=True,figsize=(8,3), dpi=300)
 axes = ax.flatten()
 pcas = pca.transform(images_va[:5])
-pcas[:, -(280-n):] = 0
+pcas[:, -(k-n):] = 0
 for i, im in enumerate(pcas):
     result = pca.inverse_transform(im).reshape((128,128))
     axes[i].imshow(images_va[i].reshape(128,128), cmap="gray")
