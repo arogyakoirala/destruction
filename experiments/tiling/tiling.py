@@ -115,8 +115,8 @@ labels = sorted(_labels)
 print(len(images), len(_labels))
 
 
-suffixes = ["unb_im_tr_pre", "unb_im_va_pre", "unb_im_te_pre", "unb_im_tr_post", "unb_im_va_post", "unb_im_te_post",  "unb_la_tr",  "unb_la_va",  "unb_la_te"]
-# suffixes = [f"{SUFFIX}_snn_tr", f"{SUFFIX}_snn_va", f"{SUFFIX}_snn_te", "unb_la_snn_tr", "unb_la_snn_va","unb_la_snn_te"]
+suffixes = ["im_tr_pre", "im_va_pre", "im_te_pre", "im_tr_post", "im_va_post", "im_te_post",  "la_tr",  "la_va",  "la_te"]
+# suffixes = [f"{SUFFIX}_snn_tr", f"{SUFFIX}_snn_va", f"{SUFFIX}_snn_te", "la_snn_tr", "la_snn_va","la_snn_te"]
 for s in suffixes:
     delete_zarr_if_exists(CITY, s, DATA_DIR)
 
@@ -148,30 +148,30 @@ for j, pre_image_index in enumerate(PRE_IMAGE_INDEX):
 
             samples_min_unc = np.delete(samples.flatten(), unc)
 
-            _, image_tr, image_va, image_te = sample_split(image, samples_min_unc) # for smaller samples there is no noanalysis class
-            _, label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
-            _, pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
+            # _, image_tr, image_va, image_te = sample_split(image, samples_min_unc) # for smaller samples there is no noanalysis class
+            # _, label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
+            # _, pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
 
 
-            # image_tr, image_va, image_te = sample_split(image, samples_min_unc) # for smaller samples there is no noanalysis class
-            # label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
-            # pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
+            image_tr, image_va, image_te = sample_split(image, samples_min_unc) # for smaller samples there is no noanalysis class
+            label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
+            pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
 
             # image_tr = image_tr.reshape(*image_tr.shape)
             pre_image_tr = np.squeeze(pre_image_tr)
-            save_zarr(pre_image_tr, CITY, 'unb_im_tr_pre', path=DATA_DIR)
-            save_zarr(image_tr, CITY, 'unb_im_tr_post', path=DATA_DIR)
-            save_zarr(label_tr, CITY, 'unb_la_tr', path=DATA_DIR)
+            save_zarr(pre_image_tr, CITY, 'im_tr_pre', path=DATA_DIR)
+            save_zarr(image_tr, CITY, 'im_tr_post', path=DATA_DIR)
+            save_zarr(label_tr, CITY, 'la_tr', path=DATA_DIR)
 
             pre_image_va = np.squeeze(pre_image_va)
-            save_zarr(pre_image_va, CITY, 'unb_im_va_pre', path=DATA_DIR)
-            save_zarr(image_va, CITY, 'unb_im_va_post', path=DATA_DIR)
-            save_zarr(label_va, CITY, 'unb_la_va', path=DATA_DIR)
+            save_zarr(pre_image_va, CITY, 'im_va_pre', path=DATA_DIR)
+            save_zarr(image_va, CITY, 'im_va_post', path=DATA_DIR)
+            save_zarr(label_va, CITY, 'la_va', path=DATA_DIR)
 
             pre_image_te = np.squeeze(pre_image_te)
-            save_zarr(pre_image_te, CITY, 'unb_im_te_pre', path=DATA_DIR)
-            save_zarr(image_te, CITY, 'unb_im_te_post', path=DATA_DIR)
-            save_zarr(label_te, CITY, 'unb_la_te', path=DATA_DIR)
+            save_zarr(pre_image_te, CITY, 'im_te_pre', path=DATA_DIR)
+            save_zarr(image_te, CITY, 'im_te_post', path=DATA_DIR)
+            save_zarr(label_te, CITY, 'la_te', path=DATA_DIR)
             
             # save_zarr(image_tr, CITY, 'im_snn_tr_tt', path=DATA_DIR)
             # save_zarr(pre_image_tr, CITY, 'im_snn_tr_t0', path=DATA_DIR)
@@ -179,16 +179,16 @@ for j, pre_image_index in enumerate(PRE_IMAGE_INDEX):
 
 
 print("Sanity Check 1: Training")
-print(read_zarr(CITY, "unb_im_tr_pre", DATA_DIR ).shape)
-print(read_zarr(CITY, "unb_im_tr_post", DATA_DIR ).shape)
-print(read_zarr(CITY, "unb_la_tr", DATA_DIR ).shape)
+print(read_zarr(CITY, "im_tr_pre", DATA_DIR ).shape)
+print(read_zarr(CITY, "im_tr_post", DATA_DIR ).shape)
+print(read_zarr(CITY, "la_tr", DATA_DIR ).shape)
 
 print("Sanity Check 2: Testing")
-print(read_zarr(CITY, "unb_im_te_pre", DATA_DIR ).shape)
+print(read_zarr(CITY, "im_te_pre", DATA_DIR ).shape)
 print(read_zarr(CITY, "im_te_post", DATA_DIR ).shape)
-print(read_zarr(CITY, "unb_la_te", DATA_DIR ).shape)
+print(read_zarr(CITY, "la_te", DATA_DIR ).shape)
 
 print("Sanity Check 1: Validation")
-print(read_zarr(CITY, "unb_im_va_pre", DATA_DIR ).shape)
-print(read_zarr(CITY, "unb_im_va_post", DATA_DIR ).shape)
-print(read_zarr(CITY, "unb_la_va", DATA_DIR ).shape)
+print(read_zarr(CITY, "im_va_pre", DATA_DIR ).shape)
+print(read_zarr(CITY, "im_va_post", DATA_DIR ).shape)
+print(read_zarr(CITY, "la_va", DATA_DIR ).shape)
