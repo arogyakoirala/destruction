@@ -3,7 +3,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--suffix", help="Suffix")
 args = parser.parse_args()
 
-SUFFIX = 'hog'
+SUFFIX = 'lap'
 CITY = 'aleppo_cropped'
 DATA_DIR = "../../../data"
 PERC_VARIANCE = 0.80
