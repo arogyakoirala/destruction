@@ -77,7 +77,7 @@ def get_laplacian(z_images,levels):
     lap_zarr = []
     print("Done greyscaling, building laplacian stack...")
     for i, img in enumerate(images_gray):
-        if i%100 == 0:
+        if i%1000 == 0:
             print(i)
         gs, ls = gaussian_and_laplacian_stack(img, levels)
         lap_zarr.append(ls[0])
