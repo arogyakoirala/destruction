@@ -148,14 +148,14 @@ for j, pre_image_index in enumerate(PRE_IMAGE_INDEX):
 
             samples_min_unc = np.delete(samples.flatten(), unc)
 
-            # _, image_tr, image_va, image_te = sample_split(image, samples_min_unc) # for smaller samples there is no noanalysis class
-            # _, label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
-            # _, pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
+            _, image_tr, image_va, image_te = sample_split(image, samples_min_unc) # for smaller samples there is no noanalysis class
+            _, label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
+            _, pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
 
 
-            image_tr, image_va, image_te = sample_split(image, samples_min_unc) # for smaller samples there is no noanalysis class
-            label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
-            pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
+            # image_tr, image_va, image_te = sample_split(image, samples_min_unc) # for smaller samples there is no noanalysis class
+            # label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
+            # pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
 
             # image_tr = image_tr.reshape(*image_tr.shape)
             pre_image_tr = np.squeeze(pre_image_tr)
