@@ -63,7 +63,7 @@ def get_hog_patches(images):
     encodings = None
 
     for i, im in enumerate(images):
-        if i%100==0:
+        if i%500==0:
             print(i)
         _, image = get_hog(im)
         if encodings is None:
