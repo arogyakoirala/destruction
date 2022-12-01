@@ -5,7 +5,7 @@ import tensorflow as tf
 import time
 import pickle
 from keras.models import load_model
-from sklearn.metrics import precision_recall_curve, roc_auc_score, precision_score, recall_score, roc_curve
+from sklearn.metrics import precision_recall_curve, roc_auc_score
 import zarr
 import random
 from tensorflow.keras import backend, layers, models
@@ -180,9 +180,9 @@ yhat_proba, y = np.squeeze(best_model.predict(gen_te)), np.squeeze(la_te[0:(len(
 roc_auc_test = roc_auc_score(y, yhat_proba)
 #calculate precision and recall
 precision, recall, thresholds = precision_recall_curve(y, yhat_proba)
-F1 = 2 * (precision * recall) / (precision + recall)
-p_score = precision_score(y, yhat_proba)
-r_score = recall_score(y, yhat_proba)
+# F1 = 2 * (precision * recall) / (precision + recall)
+# p_score = precision_score(y, yhat_proba)
+# r_score = recall_score(y, yhat_proba)
 # plot_roc_curve(fpr, tpr)
 
 
@@ -191,7 +191,7 @@ fig, ax = plt.subplots()
 ax.plot(recall, precision, color='purple')
 
 #add axis labels to plot
-ax.set_title('Precision-Recall |Curve')
+ax.set_title('Precision-Recall Curve')
 ax.set_ylabel('Precision')
 ax.set_xlabel('Recall')
 
