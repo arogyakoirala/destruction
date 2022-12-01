@@ -90,24 +90,34 @@ def get_laplacian(z_images,levels):
     return output
 
 
-images_tr = read_zarr('aleppo_cropped', 'im_tr', DATA_DIR)[:]
-images_tr_lap = get_laplacian(images_tr, 3)
-save_zarr(city=CITY, data=images_tr_lap, suffix="lap_tr", path=DATA_DIR)
+images_tr_pre = read_zarr('aleppo_cropped', 'im_tr_pre', DATA_DIR)[:]
+images_tr_lap_pre = get_laplacian(images_tr_pre, 3)
+images_tr_post = read_zarr('aleppo_cropped', 'im_tr_post', DATA_DIR)[:]
+images_tr_lap_post = get_laplacian(images_tr_post, 3)
+save_zarr(city=CITY, data=images_tr_lap_pre, suffix="lap_tr_pre", path=DATA_DIR)
+save_zarr(city=CITY, data=images_tr_lap_post, suffix="lap_tr_post", path=DATA_DIR)
 
-images_va = read_zarr('aleppo_cropped', 'im_va', DATA_DIR)[:]
-images_va_lap = get_laplacian(images_va, 3)
-save_zarr(city=CITY, data=images_va_lap, suffix="lap_va", path=DATA_DIR)
+images_va_pre = read_zarr('aleppo_cropped', 'im_va_pre', DATA_DIR)[:]
+images_va_lap_pre = get_laplacian(images_va_pre, 3)
+images_va_post = read_zarr('aleppo_cropped', 'im_va_post', DATA_DIR)[:]
+images_va_lap_post = get_laplacian(images_va_post, 3)
+save_zarr(city=CITY, data=images_va_lap_pre, suffix="lap_va_pre", path=DATA_DIR)
+save_zarr(city=CITY, data=images_va_lap_post, suffix="lap_va_post", path=DATA_DIR)
 
-images_te = read_zarr('aleppo_cropped', 'im_te', DATA_DIR)[:]
-images_te_lap = get_laplacian(images_te, 3)
-save_zarr(city=CITY, data=images_te_lap, suffix="lap_te", path=DATA_DIR)
+images_te_pre = read_zarr('aleppo_cropped', 'im_te_pre', DATA_DIR)[:]
+images_te_lap_pre = get_laplacian(images_te_pre, 3)
+images_te_post = read_zarr('aleppo_cropped', 'im_te_post', DATA_DIR)[:]
+images_te_lap_post = get_laplacian(images_te_post, 3)
+save_zarr(city=CITY, data=images_te_lap_pre, suffix="lap_te_pre", path=DATA_DIR)
+save_zarr(city=CITY, data=images_te_lap_post, suffix="lap_te_post", path=DATA_DIR)
+
 
 fig, ax = plt.subplots(2,5,figsize=(8,3), dpi=300)
 axes = ax.flatten()
 fig.suptitle("Images with their corresponding Level 1 Laplacians")
 for i in range(5):
-    axes[i+5].imshow(images_tr_lap[i].reshape(128,128), cmap="gray")
-    axes[i].imshow(images_tr[i, :, :, 1].reshape(128,128), cmap="gray")
+    axes[i+5].imshow(images_tr_lap_post[i].reshape(128,128), cmap="gray")
+    axes[i].imshow(images_tr_post[i, :, :, 1].reshape(128,128), cmap="gray")
 for ax in axes:
     ax.set_xticks([])
     ax.set_yticks([])

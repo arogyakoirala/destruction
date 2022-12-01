@@ -50,9 +50,9 @@ def save_zarr(data, city, suffix, path="../data"):
 
 
 
-images_tr = read_zarr(CITY, f"{SUFFIX}_tr", DATA_DIR)[:]
-images_va = read_zarr(CITY, f"{SUFFIX}_va", DATA_DIR)[:]
-images_te = read_zarr(CITY, f"{SUFFIX}_te", DATA_DIR)[:]
+images_tr = read_zarr(CITY, f"{SUFFIX}_tr_post", DATA_DIR)[:]
+images_va = read_zarr(CITY, f"{SUFFIX}_va_post", DATA_DIR)[:]
+images_te = read_zarr(CITY, f"{SUFFIX}_te_post", DATA_DIR)[:]
 
 images_tr = images_tr.reshape((images_tr.shape[0], 128*128))
 images_va = images_va.reshape((images_va.shape[0], 128*128))

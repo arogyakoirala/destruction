@@ -11,8 +11,8 @@ import multiprocessing as mp
 CITY = "aleppo_cropped"
 TILE_SIZE = (128,128)
 DATA_DIR = "../../../data"
-N_CORES = 30
-BLOCK_SIZE = 1000
+N_CORES = 1
+BLOCK_SIZE = 100
 
 def make_tuple_pair(n, step_size):
     if step_size > n:
@@ -43,6 +43,12 @@ def save_zarr(data, city, suffix, path="../data"):
         za = zarr.open(path, mode='a')
         za.append(data)
 
+def delete_zarr_if_exists(city, suffix, path="../data"):
+    path = f'{path}/{city}/others/{city}_{suffix}.zarr'
+    if os.path.exists(path):
+        shutil.rmtree(path)
+
+
 
 def get_hog(image):
     image = np.float32(image)
@@ -56,7 +62,7 @@ def get_hog_patches(images):
     encodings = None
 
     for i, im in enumerate(images):
-        if i%100==0:
+        if i%5==0:
             print(i)
         _, image = get_hog(im)
         if encodings is None:
@@ -69,40 +75,51 @@ def get_hog_patches(images):
     return hogs, encodings
 
 
-def parallel_block_handler(blocks, images, suffix):
+def parallel_block_handler(blocks, images_pre, images_post, suffix):
     for b in blocks:
         print(b)
-        bl = images[b[0]: b[1]]
-        hogs, encs = get_hog_patches(bl)
-        save_zarr(city=CITY, data=hogs, suffix=suffix, path=DATA_DIR)
+        bl_pre = images_pre[b[0]: b[1]]
+        bl_post = images_post[b[0]: b[1]]
+        hogs_pre, encs = get_hog_patches(bl_pre)
+        hogs_post, encs = get_hog_patches(bl_post)
+        # print(hogs_post.shape)
+        save_zarr(city=CITY, data=hogs_pre, suffix=f"{suffix}_pre", path=DATA_DIR)
+        save_zarr(city=CITY, data=hogs_post, suffix=f"{suffix}_post", path=DATA_DIR)
 
 
-def save_patches_parallel(images, bls, suffix):
+def save_patches_parallel(images_pre, images_post, blocks, suffix):
     parent_chunks = np.array_split(blocks, N_CORES)
     pool = mp.Pool(processes=N_CORES)
-    chunk_processes = [pool.apply_async(parallel_block_handler, args=(chunk, images, suffix)) for chunk in parent_chunks]
+    chunk_processes = [pool.apply_async(parallel_block_handler, args=(chunk, images_pre, images_post, suffix)) for chunk in parent_chunks]
     chunk_results = [chunk.get() for chunk in chunk_processes]
 
+suffixes = ["hog_tr_pre", "hog_va_pre", "hog_te_pre", "hog_tr_post", "hog_va_post", "hog_te_post"]
+# suffixes = [f"{SUFFIX}_snn_tr", f"{SUFFIX}_snn_va", f"{SUFFIX}_snn_te", "la_snn_tr", "la_snn_va","la_snn_te"]
+for s in suffixes:
+    delete_zarr_if_exists(CITY, s, DATA_DIR)
 
 if __name__ == '__main__':
     
 
-    images_tr = read_zarr('aleppo_cropped', 'im_tr', DATA_DIR)
-    blocks = make_tuple_pair(images_tr.shape[0], BLOCK_SIZE)
-    save_patches_parallel(images_tr, blocks, 'hog_tr')
+    images_tr_pre = read_zarr('aleppo_cropped', 'im_tr_pre', DATA_DIR)
+    images_tr_post = read_zarr('aleppo_cropped', 'im_tr_post', DATA_DIR)
+    blocks = make_tuple_pair(images_tr_pre.shape[0], BLOCK_SIZE)
+    save_patches_parallel(images_tr_pre, images_tr_post, blocks, 'hog_tr')
 
 
-    images_va = read_zarr('aleppo_cropped', 'im_va', DATA_DIR)
-    blocks = make_tuple_pair(images_va.shape[0], BLOCK_SIZE)
-    save_patches_parallel(images_va, blocks, 'hog_va')
+    images_va_pre = read_zarr('aleppo_cropped', 'im_va_pre', DATA_DIR)
+    images_va_post = read_zarr('aleppo_cropped', 'im_va_post', DATA_DIR)
+    blocks = make_tuple_pair(images_va_pre.shape[0], BLOCK_SIZE)
+    save_patches_parallel(images_va_pre, images_va_post, blocks, 'hog_va')
 
-    images_te = read_zarr('aleppo_cropped', 'im_te', DATA_DIR)
-    blocks = make_tuple_pair(images_te.shape[0], BLOCK_SIZE)
-    save_patches_parallel(images_te, blocks, 'hog_te')
-
+    images_te_pre = read_zarr('aleppo_cropped', 'im_te_pre', DATA_DIR)
+    images_te_post = read_zarr('aleppo_cropped', 'im_te_post', DATA_DIR)
+    blocks = make_tuple_pair(images_te_pre.shape[0], BLOCK_SIZE)
+    save_patches_parallel(images_te_pre, images_te_post, blocks, 'hog_te')
    
 
-    images_tr_hog = read_zarr('aleppo_cropped', 'hog_tr', DATA_DIR)
+    images_tr_hog = read_zarr('aleppo_cropped', 'hog_va_post', DATA_DIR)
+    print(images_tr_hog)
 
     # Show the first 10 hog
     fig, ax = plt.subplots(2,5,figsize=(8,3), dpi=300)
@@ -110,7 +127,7 @@ if __name__ == '__main__':
     fig.suptitle("Images with their corresponding HOGs")
     for i in range(5):
         axes[i+5].imshow(images_tr_hog[i].reshape(128,128), cmap="gray")
-        axes[i].imshow(images_tr[i, :, :, 1].reshape(128,128), cmap="gray")
+        axes[i].imshow(images_va_post[i, :, :, 1].reshape(128,128), cmap="gray")
     for ax in axes:
         ax.set_xticks([])
         ax.set_yticks([])
