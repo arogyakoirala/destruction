@@ -1,31 +1,155 @@
+import zarr
+from pathlib import Path
+import os
+import math
 import numpy as np
-from tensorflow.keras import callbacks, metrics
+from tensorflow.keras import backend, layers, models, callbacks, metrics
 from tensorflow.keras.utils import Sequence
+import random
 import tensorflow as tf
-import time
-import pickle
 from keras.models import load_model
 from sklearn.metrics import precision_recall_curve, roc_auc_score
-import zarr
-import random
-from tensorflow.keras import backend, layers, models
-from tensorflow import math
-from datetime import datetime
 import matplotlib.pyplot as plt
+import time
+import shutil
+
+
+CITIES = ['aleppo', 'raqqa']
+DATA_DIR = "../data"
+OUTPUT_DIR = "../outputs"
 
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--suffix", help="Suffix")
-parser.add_argument("--bands", help="Numper of bands", type=int)
+parser.add_argument("--cities", help="Cities, comma separated. Eg: aleppo,raqqa,damascus")
 args = parser.parse_args()
 
+if args.cities:
+    CITIES = [el.strip() for el in args.cities.split(",")]
 
-CITY = 'aleppo_cropped'
-SUFFIX = 'lap'
-BANDS = 3
-# N_BANDS = 3
-DATA_DIR = "../../../data"
-MODEL_DIR = "../../../models"
+def read_zarr(city, suffix, path="../data"):
+    path = f'{path}/{city}/others/{city}_{suffix}.zarr'
+    return zarr.open(path)
+
+def save_zarr(data, path):
+    # path = f'{path}/{city}/others/{city}_{suffix}.zarr'
+
+    if not os.path.exists(path):
+        zarr.save(path, data)        
+    else:
+        za = zarr.open(path, mode='a')
+        za.append(data)
+
+def delete_zarr_if_exists(path):
+    # path = f'{path}/{city}/others/{city}_{suffix}.zarr'
+    if os.path.exists(path):
+        shutil.rmtree(path)
+
+def make_tuple_pair(n, step_size):
+    if step_size > n:
+        return [(0,n)]
+    iters = math.ceil(n/step_size*1.0)
+    l = []
+    for i in range(0, iters):
+        if i == iters - 1:
+            t = (i*step_size, n)
+            l.append(t)
+        else:
+            t = (i*step_size, (i+1)*step_size)
+            l.append(t)
+    return l
+
+
+Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
+
+runs = [f for f in os.listdir(OUTPUT_DIR) if ".log" not in f]
+runs = [f for f in runs if ".DS_Store" not in f]
+run_id = len(runs)+1
+
+print(f"Run ID: {run_id} (use this code for dense_predict.py) \n\n")
+time.sleep(5)
+
+
+RUN_DIR = OUTPUT_DIR + f"/{run_id}"
+Path(RUN_DIR).mkdir(parents=True, exist_ok=True)
+
+f = open(f"{OUTPUT_DIR}/runs.log", "a")
+f.write(f"Run {run_id}: {CITIES} \n")
+f.close()
+
+# im_tr_pre = None
+# im_tr_post = None
+# la_tr = None
+# im_va_pre = None
+# im_va_post = None
+# la_va = None
+
+
+for city in CITIES:
+    im_tr_pre = read_zarr(city, "im_tr_pre", DATA_DIR)
+    im_tr_post = read_zarr(city, "im_tr_post", DATA_DIR)
+    la_tr= read_zarr(city, "la_tr", DATA_DIR)
+
+    im_va_pre = read_zarr(city, "im_va_pre", DATA_DIR)
+    im_va_post = read_zarr(city, "im_va_post", DATA_DIR)
+    la_va = read_zarr(city, "la_va", DATA_DIR)
+
+    im_te_pre = read_zarr(city, "im_te_pre", DATA_DIR)
+    im_te_post = read_zarr(city, "im_te_post", DATA_DIR)
+    la_te = read_zarr(city, "la_te", DATA_DIR)
+
+
+    steps = make_tuple_pair(im_tr_pre.shape[0], 5000)
+    
+    for st in steps:
+        _im_tr_pre = im_tr_pre[st[0]:st[1]]
+        _im_tr_post = im_tr_post[st[0]:st[1]]
+        _la_tr = la_tr[st[0]:st[1]]
+
+        save_zarr(_im_tr_pre, f"{RUN_DIR}/im_tr_pre.zarr")
+        save_zarr(_im_tr_post, f"{RUN_DIR}/im_tr_post.zarr")
+        save_zarr(_la_tr, f"{RUN_DIR}/la_tr.zarr")
+
+        _im_va_pre = im_va_pre[st[0]:st[1]]
+        _im_va_post = im_va_post[st[0]:st[1]]
+        _la_va = la_va[st[0]:st[1]]
+
+        save_zarr(_im_va_pre, f"{RUN_DIR}/im_va_pre.zarr")
+        save_zarr(_im_va_post, f"{RUN_DIR}/im_va_post.zarr")
+        save_zarr(_la_va, f"{RUN_DIR}/la_va.zarr")
+
+        _im_te_pre = im_te_pre[st[0]:st[1]]
+        _im_te_post = im_te_post[st[0]:st[1]]
+        _la_te = la_te[st[0]:st[1]]
+
+        save_zarr(_im_te_pre, f"{RUN_DIR}/im_te_pre.zarr")
+        save_zarr(_im_te_post, f"{RUN_DIR}/im_te_post.zarr")
+        save_zarr(_la_te, f"{RUN_DIR}/la_te.zarr")
+
+
+im_tr_pre = zarr.open(f"{RUN_DIR}/im_tr_pre.zarr")
+im_tr_post = zarr.open(f"{RUN_DIR}/im_tr_post.zarr")
+la_tr= zarr.open(f"{RUN_DIR}/la_tr.zarr")
+
+im_va_pre = zarr.open(f"{RUN_DIR}/im_va_pre.zarr")
+im_va_post = zarr.open(f"{RUN_DIR}/im_va_post.zarr")
+la_va = zarr.open(f"{RUN_DIR}/la_va.zarr")
+
+im_te_pre = zarr.open(f"{RUN_DIR}/im_te_pre.zarr")
+im_te_post = zarr.open(f"{RUN_DIR}/im_te_post.zarr")
+la_te = zarr.open(f"{RUN_DIR}/la_te.zarr")
+
+
+f = open(f"{RUN_DIR}/metadata.txt", "a")
+f.write(f"\n\n######## Run {run_id}: {CITIES} \n\n")
+f.write(f"Training Set: {np.unique(la_tr[:], return_counts=True)} \n")
+f.write(f"Validation Set: {np.unique(la_va[:], return_counts=True)} \n")
+f.write(f"Test Set: {np.unique(la_te[:], return_counts=True)} \n")
+f.close()
+
+
+
+# Begin SNN Code
+
 BATCH_SIZE = 32
 PATCH_SIZE = (128,128)
 FILTERS = [8]
@@ -34,15 +158,6 @@ EPOCHS = [70, 100]
 UNITS = [8]
 LR = [0.002, 0.003, 0.004]
 
-if args.suffix:
-    SUFFIX = args.suffix
-
-if args.bands:
-    BANDS = args.bands
-
-def read_zarr(city, suffix, path="../data"):
-    path = f'{path}/{city}/others/{city}_{suffix}.zarr'
-    return zarr.open(path)
 
 def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
     tensor = layers.Dense(units=units, use_bias=False, kernel_initializer='he_normal', name=f'{name}_dense')(inputs)
@@ -111,29 +226,13 @@ class SiameseGenerator(Sequence):
             return {'images_t0': X_pre, 'images_tt': X_post}
 
 
-im_tr_pre= read_zarr(CITY, f'{SUFFIX}_tr_pre', path=DATA_DIR)
-im_tr_post = read_zarr(CITY, f'{SUFFIX}_tr_post', path=DATA_DIR)
-la_tr = read_zarr(CITY, 'la_tr', path=DATA_DIR)
-
-im_va_pre= read_zarr(CITY, f'{SUFFIX}_va_pre', path=DATA_DIR)
-im_va_post = read_zarr(CITY, f'{SUFFIX}_va_post', path=DATA_DIR)
-la_va = read_zarr(CITY, 'la_va', path=DATA_DIR)
-
-im_te_pre= read_zarr(CITY, f'{SUFFIX}_te_pre', path=DATA_DIR)
-im_te_post = read_zarr(CITY, f'{SUFFIX}_te_post', path=DATA_DIR)
-la_te = read_zarr(CITY, 'la_te', path=DATA_DIR)
-
 gen_tr = SiameseGenerator((im_tr_pre, im_tr_post), la_tr)
 gen_va = SiameseGenerator((im_va_pre, im_va_post), la_va)
 
-print(im_tr_pre)
-
-MODEL_STORAGE_LOCATION = f"{MODEL_DIR}/snn_{SUFFIX}_{datetime.now().strftime('%d_%m_%Y_%H_%M_%S')}"
-
-# print(f"Label distributions: {np.unique(la_tr[:], return_counts=True )}")
-
+print("+++++++++", gen_tr.__len__())
+MODEL_STORAGE_LOCATION = f"{RUN_DIR}/model"
 training_callbacks = [
-    callbacks.EarlyStopping(monitor='val_auc', patience=10, restore_best_weights=True),
+    callbacks.EarlyStopping(monitor='val_auc', patience=5, restore_best_weights=True),
     callbacks.ModelCheckpoint(f'{MODEL_STORAGE_LOCATION}', monitor='val_auc', verbose=0, save_best_only=True, save_weights_only=False, mode='max')
 ]
 
@@ -145,15 +244,18 @@ units = random.choice(UNITS)
 lr = random.choice(LR)
 
 args  = dict(filters=filters, dropout=dropout, units=units) # ! Check parameters before run
-parameters = f'filters={filters}, \ndropout={np.round(dropout, 4)}, \nepochs={epochs}, \nunits={units}, \nlearning_rate={lr}'
-print(parameters)
+
 
 args_encode = dict(filters=filters, dropout=dropout)
 args_dense  = dict(units=units, dropout=dropout)
-parameters  = f'Model parameters: filters={filters}, \ndropout={np.round(dropout, 4)}, \nepochs={epochs}, \nunits={units}, \nlearning_rate={lr}'
+parameters = f'filters={filters}, \ndropout={np.round(dropout, 4)}, \nepochs={epochs}, \nunits={units}, \nlearning_rate={lr}'
+print(parameters)
+f = open(f"{RUN_DIR}/metadata.txt", "a")
+f.write(f"\n######## Run parameters \n\n{parameters}")
+f.close()
 
 model = double_convolutional_network(
-    shape=(*PATCH_SIZE, BANDS),  
+    shape=(*PATCH_SIZE, 3),  
     args_encode = args_encode,
     args_dense = args_dense,
 )
@@ -172,6 +274,23 @@ history = model.fit(
     callbacks=training_callbacks
 )
 
+def plot_training(H):
+	# construct a plot that plots and saves the training history
+	plt.style.use("ggplot")
+	plt.figure()
+	plt.plot(H.history["accuracy"], label="train_accuracy")
+	plt.plot(H.history["val_accuracy"], label="val_accuracy")
+	plt.plot(H.history["auc"], label="train_auc")
+	plt.plot(H.history["val_auc"], label="val_auc")
+	plt.title(f"Training Accuracy and AUC")
+	plt.suptitle(f"Cities = {CITIES}; RUN ID = {run_id}") 
+	plt.xlabel("Epoch #")
+	plt.ylabel("AUC")
+	plt.text(0.65, 0.18, f"\nmax(val_auc)={np.round(np.max(H.history['val_auc']), 4)}", fontsize=8, transform=plt.gcf().transFigure)
+	plt.legend(loc="lower left")
+	plt.savefig(f"{RUN_DIR}/training.png")
+
+plot_training(history)
 
 # model_path = f'{MODEL_DIR}/{CITY}/snn/run_{i}'
 best_model = load_model(MODEL_STORAGE_LOCATION, custom_objects={'auc':metrics.AUC(num_thresholds=200, curve='ROC', name='auc')})
@@ -180,10 +299,6 @@ yhat_proba, y = np.squeeze(best_model.predict(gen_te)), np.squeeze(la_te[0:(len(
 roc_auc_test = roc_auc_score(y, yhat_proba)
 #calculate precision and recall
 precision, recall, thresholds = precision_recall_curve(y, yhat_proba)
-# F1 = 2 * (precision * recall) / (precision + recall)
-# p_score = precision_score(y, yhat_proba)
-# r_score = recall_score(y, yhat_proba)
-# plot_roc_curve(fpr, tpr)
 
 
 #create precision recall curve
@@ -194,7 +309,26 @@ ax.plot(recall, precision, color='purple')
 ax.set_title('Precision-Recall Curve')
 ax.set_ylabel('Precision')
 ax.set_xlabel('Recall')
-
-print(f'Run {MODEL_STORAGE_LOCATION}: \nTest Set AUC Score for the ROC Curve: {roc_auc_test} \nAverage precision:  {np.mean(precision)}' )
+f = open(f"{RUN_DIR}/metadata.txt", "a")
+f.write("\n\n######## Test set performance\n\n")
+f.write(f'Test Set AUC Score for the ROC Curve: {roc_auc_test} \nAverage precision:  {np.mean(precision)}')
+f.close()
 #display plot
-plt.savefig(f"pr_curve_{SUFFIX}.png")
+plt.savefig(f"{RUN_DIR}/pr_curve.png")
+
+delete_zarr_if_exists(f"{RUN_DIR}/im_tr_pre.zarr")
+delete_zarr_if_exists(f"{RUN_DIR}/im_tr_post.zarr")
+delete_zarr_if_exists(f"{RUN_DIR}/la_tr.zarr")
+
+delete_zarr_if_exists(f"{RUN_DIR}/im_va_pre.zarr")
+delete_zarr_if_exists(f"{RUN_DIR}/im_va_post.zarr")
+delete_zarr_if_exists(f"{RUN_DIR}/la_va.zarr")
+
+delete_zarr_if_exists(f"{RUN_DIR}/im_te_pre.zarr")
+delete_zarr_if_exists(f"{RUN_DIR}/im_te_post.zarr")
+delete_zarr_if_exists(f"{RUN_DIR}/la_te.zarr")
+
+
+
+
+

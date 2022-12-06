@@ -1,16 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
 import zarr
 import numpy as np
 import os
@@ -18,9 +5,9 @@ import shutil
 import random
 
 # SUFFIX = 'im_tr'
-CITY = 'aleppo_cropped'
-DATA_DIR = "../../../data"
-BLOCK_SIZE = 2000
+CITY = 'aleppo'
+DATA_DIR = "../data"
+BLOCK_SIZE = 10000
 
 def read_zarr(city, suffix, path="../data"):
     path = f'{path}/{city}/others/{city}_{suffix}.zarr'
@@ -33,7 +20,14 @@ def save_zarr(data, city, suffix, path="../data"):
     else:
         za = zarr.open(path, mode='a')
         za.append(data)
+        
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--city", help="City")
+args = parser.parse_args()
 
+if args.city:
+    CITY = args.city
 
 images_pre = read_zarr(CITY, 'im_tr_pre', DATA_DIR)
 images_post = read_zarr(CITY, 'im_tr_post', DATA_DIR)
@@ -89,3 +83,17 @@ for i, bl in enumerate(blocks):
 print(f"There were {labels.shape[0]} total. {neg} negative; {len(pos)} positive. Added {len(add)} positive samples")
 labels = read_zarr(CITY, 'la_tr', DATA_DIR)
 print(f"New shape: {labels.shape}")
+
+f = open(f"{DATA_DIR}/{CITY}/others/metadata.txt", "a")
+
+f.write("\n\n######## Balancing Step\n\n")
+f.write(f"There were {labels.shape[0]} total. {neg} negative; {len(pos)} positive. Added {len(add)} positive samples\n")
+
+tr_pre = read_zarr(CITY, "im_tr_pre", DATA_DIR)
+va_pre = read_zarr(CITY, "im_va_pre", DATA_DIR)
+te_pre = read_zarr(CITY, "im_te_pre", DATA_DIR)
+
+f.write(f"Training set: {tr_pre.shape[0]} observations\n")
+f.write(f"Validation set: {va_pre.shape[0]} observations\n")
+f.write(f"Test set: {te_pre.shape[0]} observations\n\n")
+f.close()
