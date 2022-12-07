@@ -2,7 +2,7 @@
 source /usr/local/anaconda3/condabin/conda
 conda activate mlp
 
-declare -a Cities=("aleppo" "damascus" "daraa" "deir-ez-zor" "hama" "homs" "idlib" "raqqa")
+declare -a Cities=("aleppo" "damascus" "daraa" "deir-ez-zor" "hama" "homs" "idlib")
 
 for city in "${Cities[@]}"; do
     python sample.py --city $city
