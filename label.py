@@ -97,8 +97,7 @@ image      = search_data(pattern(city=CITY, type='image'), directory=DATA_DIR)[0
 profile    = tiled_profile(image, tile_size=(*TILE_SIZE, 1))
 
 # Reads damage reports
-damage = search_data(f'{CITY}_damage.*gpkg$', directory=DATA_DIR)
-print(damage)
+damage = search_data(f'{CITY}_damage.*gpkg$', directory=DATA_DIR)[0]
 damage = geopandas.read_file(damage)
 last_annotation_date = sorted(damage.columns)[-2]
 
