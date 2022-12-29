@@ -40,7 +40,7 @@ def pattern(city:str='.*', type:str='.*', date:str='.*', ext:str='tif') -> str:
     '''Regular expressions for search_data'''
     return f'^.*{city}/.*/{type}_{date}\.{ext}$'
 
-def read_raster(source:str, band:int=None, window=None, dtype:str='int8', profile:bool=False) -> np.ndarray:
+def read_raster(source:str, band:int=None, window=None, dtype:str='uint8', profile:bool=False) -> np.ndarray:
     '''Reads a raster as a numpy array'''
     raster = rasterio.open(source)
     if band is not None:
@@ -215,8 +215,10 @@ index = random.randint(0,tr_pre.shape[0] - 10)
 fig, ax = plt.subplots(2,5,dpi=200, figsize=(25,10))
 ax = ax.flatten()
 for i, image in enumerate(tr_pre[index:index+5]):
+    print(image)
     ax[i].imshow(image)
 for i, image in enumerate(tr_post[index:index+5]):
+    print(image)
     ax[i+5].imshow(image)
 plt.suptitle("Training set (sample images; top=pre, bottom=post)")
 plt.savefig(f"{DATA_DIR}/{CITY}/others/tr_samples.png")
