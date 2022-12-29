@@ -62,8 +62,11 @@ def tile_sequences(images:np.ndarray, tile_size:tuple=(128, 128)) -> np.ndarray:
     assert image_height % tile_height == 0
     n_tiles_width  = (image_width  // tile_width)
     n_tiles_height = (image_height // tile_height)
+    print("In reshape operation..")
     sequence = images.reshape(n_images, n_tiles_width, tile_width, n_tiles_height, tile_height, n_bands)
+    print("In moveaxis operation..")
     sequence = np.moveaxis(sequence.swapaxes(2, 3), 0, 2)
+    print("In reshape operation..")
     sequence = sequence.reshape(-1, n_images, tile_width, tile_height, n_bands)
     return sequence
 
