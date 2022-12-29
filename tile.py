@@ -145,7 +145,9 @@ f.write(f'{len(post_images)} post images; {len(pre_images)} pre images\n')
 # # labels_tr = labels_va = labels_te = np.empty((0,))
 
 for j, pre_image in enumerate(pre_images):
+    print(f"Reading pre image.. {pre_images[j]}")
     pre_image = read_raster(pre_images[j])
+    print(f"Tiling pre image.. {pre_images[j]}")
     pre_image = tile_sequences(np.array([pre_image]), TILE_SIZE)
 
 
@@ -157,20 +159,22 @@ for j, pre_image in enumerate(pre_images):
         label = np.delete(label, unc, 0)
 
         image = post_images[i]
+        print(f"Reading image.. {post_images[i]}")
         image = read_raster(image)
         image = tile_sequences(np.array([image]))
         image = np.squeeze(image)
         image = np.delete(image, unc, 0)
 
         _pre_image = np.delete(pre_image, unc, 0)
-
+        del pre_image
+        
         samples_min_unc = np.delete(samples.flatten(), unc)
-
+        _, pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
         _, image_tr, image_va, image_te = sample_split(image, samples_min_unc) # for smaller samples there is no noanalysis class
         _, label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
-        _, pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
 
 
+        del _, image
         # image_tr, image_va, image_te = sample_split(image, samples_min_unc) # for smaller samples there is no noanalysis class
         # label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
         # pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
@@ -191,6 +195,7 @@ for j, pre_image in enumerate(pre_images):
         save_zarr(image_te, CITY, 'im_te_post', path=DATA_DIR)
         save_zarr(label_te, CITY, 'la_te', path=DATA_DIR)
         
+
         # save_zarr(image_tr, CITY, 'im_snn_tr_tt', path=DATA_DIR)
         # save_zarr(pre_image_tr, CITY, 'im_snn_tr_t0', path=DATA_DIR)
                 
