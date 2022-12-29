@@ -64,13 +64,14 @@ def tile_sequences(images:np.ndarray, tile_size:tuple=(128, 128)) -> np.ndarray:
     n_tiles_width  = (image_width  // tile_width)
     n_tiles_height = (image_height // tile_height)
     print("In reshape operation..")
-    sequence = images.reshape(n_images, n_tiles_width, tile_width, n_tiles_height, tile_height, n_bands)
+    images.shape = (n_images, n_tiles_width, tile_width, n_tiles_height, tile_height, n_bands)
+    sequence = images
+    del images
     print("In moveaxis operation..", sequence.nbytes)
     sequence = np.moveaxis(sequence.swapaxes(2, 3), 0, 2)
-    gc.collect()
     print("In reshape operation..", sequence.nbytes)
     # print(sequence.shape)
-    sequence = sequence.reshape(-1, n_images, tile_width, tile_height, n_bands)
+    sequence.shape = (-1, n_images, tile_width, tile_height, n_bands)
     gc.collect()
     return sequence
 
