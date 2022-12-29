@@ -215,10 +215,8 @@ index = random.randint(0,tr_pre.shape[0] - 10)
 fig, ax = plt.subplots(2,5,dpi=200, figsize=(25,10))
 ax = ax.flatten()
 for i, image in enumerate(tr_pre[index:index+5]):
-    print(image)
     ax[i].imshow(image)
 for i, image in enumerate(tr_post[index:index+5]):
-    print(image)
     ax[i+5].imshow(image)
 plt.suptitle("Training set (sample images; top=pre, bottom=post)")
 plt.savefig(f"{DATA_DIR}/{CITY}/others/tr_samples.png")
