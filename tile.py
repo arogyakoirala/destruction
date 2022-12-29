@@ -54,7 +54,7 @@ def read_raster(source:str, band:int=None, window=None, dtype:str='int8', profil
     else:
         return image
 
-def tile_image(image: np.ndarray, tile_size:tuple(128,128)) -> np.ndarray:
+def tile_image(image:np.ndarray, tile_size:tuple=(128,128)) -> np.ndarray:
     '''Converts image to sequences of tiles'''
     image_height, image_width, n_bands = image.shape
     tile_width, tile_height = tile_size
