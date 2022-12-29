@@ -54,18 +54,6 @@ def read_raster(source:str, band:int=None, window=None, dtype:str='int8', profil
     else:
         return image
 
-def tile_image(image:np.ndarray, tile_size:tuple=(128,128)) -> np.ndarray:
-    '''Converts image to sequences of tiles'''
-    image_height, image_width, n_bands = image.shape
-    tile_width, tile_height = tile_size
-    assert image_width  % tile_width  == 0
-    assert image_height % tile_height == 0
-    n_tiles_width  = (image_width  // tile_width)
-    n_tiles_height = (image_height // tile_height)
-    sequence = images.reshape(n_tiles_width, tile_width, n_tiles_height, tile_height, n_bands)
-    sequence = np.moveaxis(sequence.swapaxes(2, 3), 0, 2)
-    print(sequence.shape)
-    return sequence
 
 def tile_sequences(images:np.ndarray, tile_size:tuple=(128, 128)) -> np.ndarray:
     '''Converts images to sequences of tiles'''
@@ -75,14 +63,9 @@ def tile_sequences(images:np.ndarray, tile_size:tuple=(128, 128)) -> np.ndarray:
     assert image_height % tile_height == 0
     n_tiles_width  = (image_width  // tile_width)
     n_tiles_height = (image_height // tile_height)
-    print("In reshape operation..")
     sequence = images.reshape(n_images, n_tiles_width, tile_width, n_tiles_height, tile_height, n_bands)
-    print("In moveaxis operation..", sequence.nbytes)
     sequence = np.moveaxis(sequence.swapaxes(2, 3), 0, 2)
-    print("In reshape operation..", sequence.nbytes)
-    # print(sequence.shape)
     sequence = sequence.reshape(-1, n_images, tile_width, tile_height, n_bands)
-    gc.collect()
     return sequence
 
 def sample_split(images:np.ndarray, samples:dict) -> list:
@@ -167,7 +150,6 @@ for j, pre_image in enumerate(pre_images):
     pre_image = read_raster(pre_images[j])
     print(f"Tiling pre image.. {pre_images[j]}")
     pre_image = tile_sequences(np.array([pre_image]), TILE_SIZE)
-    gc.collect()
 
 
     for i in range(len(post_images)):
@@ -178,14 +160,13 @@ for j, pre_image in enumerate(pre_images):
         label = np.delete(label, unc, 0)
 
         image = post_images[i]
-        print(f"Reading image.. {post_images[i]}")
+        print(f"Reading post image.. {post_images[i]}")
         image = read_raster(image)
         image = tile_sequences(np.array([image]))
         image = np.squeeze(image)
         image = np.delete(image, unc, 0)
 
         _pre_image = np.delete(pre_image, unc, 0)
-        del pre_image
         
         samples_min_unc = np.delete(samples.flatten(), unc)
         _, pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
@@ -193,7 +174,6 @@ for j, pre_image in enumerate(pre_images):
         _, label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
 
 
-        del _, image
         # image_tr, image_va, image_te = sample_split(image, samples_min_unc) # for smaller samples there is no noanalysis class
         # label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
         # pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
