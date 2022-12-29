@@ -115,9 +115,7 @@ damage = damage.reindex(sorted(damage.columns), axis=1)
 # pre_cols = [col for col in sorted(damage.drop('geometry', axis=1).columns) if int(col.split("-")[0]) < ZERO_DAMAGE_BEFORE_YEAR]
 pre_cols = []
 pre_images  = search_data(pattern='^.*tif', directory=f'{DATA_DIR}/{CITY}/images/pre')
-print(pre_images)
 pre_cols = [f.split("image_")[1].split(".tif")[0].replace("_", "-") for f in pre_images]
-print(pre_cols)
 
 # for i, col in enumerate(sorted(damage.drop('geometry', axis=1).columns)):
 #     if col not in pre_cols:

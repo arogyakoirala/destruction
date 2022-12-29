@@ -33,7 +33,7 @@ def search_data(pattern:str='.*', directory:str='../data') -> list:
             files.append(os.path.join(root, file_name))
     files = list(filter(re.compile(pattern).search, files))
     files.sort()
-    if len(files) == 1: files = files[0]
+    # if len(files) == 1: files = files[0] 
     return files
 
 def pattern(city:str='.*', type:str='.*', date:str='.*', ext:str='tif') -> str:
@@ -100,7 +100,7 @@ post_images  = search_data(pattern='^.*tif', directory=f'{DATA_DIR}/{CITY}/image
 labels  = search_data(pattern(city=CITY, type='label'), directory=DATA_DIR)
 samples = read_raster(f'{DATA_DIR}/{CITY}/others/{CITY}_samples.tif')
 
-
+print(pre_images)
 
 
 
