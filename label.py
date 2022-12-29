@@ -30,7 +30,7 @@ def search_data(pattern:str='.*', directory:str='../data') -> list:
             files.append(os.path.join(root, file_name))
     files = list(filter(re.compile(pattern).search, files))
     files.sort()
-    if len(files) == 1: files = files[0]
+    # if len(files) == 1: files = files[0]
     return files
 
 def pattern(city:str='.*', type:str='.*', date:str='.*', ext:str='tif') -> str:
