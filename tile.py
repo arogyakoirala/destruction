@@ -40,7 +40,7 @@ def pattern(city:str='.*', type:str='.*', date:str='.*', ext:str='tif') -> str:
     '''Regular expressions for search_data'''
     return f'^.*{city}/.*/{type}_{date}\.{ext}$'
 
-def read_raster(source:str, band:int=None, window=None, dtype:str='int', profile:bool=False) -> np.ndarray:
+def read_raster(source:str, band:int=None, window=None, dtype:str='int8', profile:bool=False) -> np.ndarray:
     '''Reads a raster as a numpy array'''
     raster = rasterio.open(source)
     if band is not None:
@@ -54,6 +54,18 @@ def read_raster(source:str, band:int=None, window=None, dtype:str='int', profile
     else:
         return image
 
+def tile_image(image: np.ndarray, tile_size:tuple(128,128)) -> np.ndarray:
+    '''Converts image to sequences of tiles'''
+    image_height, image_width, n_bands = image.shape
+    tile_width, tile_height = tile_size
+    assert image_width  % tile_width  == 0
+    assert image_height % tile_height == 0
+    n_tiles_width  = (image_width  // tile_width)
+    n_tiles_height = (image_height // tile_height)
+    sequence = images.reshape(n_tiles_width, tile_width, n_tiles_height, tile_height, n_bands)
+    sequence = np.moveaxis(sequence.swapaxes(2, 3), 0, 2)
+    print(sequence.shape)
+    return sequence
 
 def tile_sequences(images:np.ndarray, tile_size:tuple=(128, 128)) -> np.ndarray:
     '''Converts images to sequences of tiles'''
@@ -64,14 +76,12 @@ def tile_sequences(images:np.ndarray, tile_size:tuple=(128, 128)) -> np.ndarray:
     n_tiles_width  = (image_width  // tile_width)
     n_tiles_height = (image_height // tile_height)
     print("In reshape operation..")
-    images.shape = (n_images, n_tiles_width, tile_width, n_tiles_height, tile_height, n_bands)
-    sequence = images
-    del images
+    sequence = images.reshape(n_images, n_tiles_width, tile_width, n_tiles_height, tile_height, n_bands)
     print("In moveaxis operation..", sequence.nbytes)
     sequence = np.moveaxis(sequence.swapaxes(2, 3), 0, 2)
     print("In reshape operation..", sequence.nbytes)
     # print(sequence.shape)
-    sequence.shape = (-1, n_images, tile_width, tile_height, n_bands)
+    sequence = sequence.reshape(-1, n_images, tile_width, tile_height, n_bands)
     gc.collect()
     return sequence
 
