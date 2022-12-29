@@ -7,6 +7,7 @@ import random
 import zarr
 import shutil
 import matplotlib.pyplot as plt
+import gc
 
 CITY = 'aleppo'
 DATA_DIR = "../data"
@@ -66,9 +67,11 @@ def tile_sequences(images:np.ndarray, tile_size:tuple=(128, 128)) -> np.ndarray:
     sequence = images.reshape(n_images, n_tiles_width, tile_width, n_tiles_height, tile_height, n_bands)
     print("In moveaxis operation..")
     sequence = np.moveaxis(sequence.swapaxes(2, 3), 0, 2)
+    gc.collect()
     print("In reshape operation..")
     print(sequence.shape)
-    # sequence = sequence.reshape(-1, n_images, tile_width, tile_height, n_bands)
+    sequence = sequence.reshape(-1, n_images, tile_width, tile_height, n_bands)
+    gc.collect()
     return sequence
 
 def sample_split(images:np.ndarray, samples:dict) -> list:
@@ -153,6 +156,7 @@ for j, pre_image in enumerate(pre_images):
     pre_image = read_raster(pre_images[j])
     print(f"Tiling pre image.. {pre_images[j]}")
     pre_image = tile_sequences(np.array([pre_image]), TILE_SIZE)
+    gc.collect()
 
 
     for i in range(len(post_images)):
