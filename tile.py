@@ -50,7 +50,7 @@ def read_raster(source:str, band:int=None, window=None, dtype:str='uint8', profi
         image = raster.read(window=window)
     # print(image.shape)
     # image = image.transpose([1, 2, 0]).astype(dtype)
-    image = image.transpose([1, 2, 0])
+    image = image.transpose([1, 2, 0]).astype(dtype)
     if profile:
         return image, raster.profile
     else:
