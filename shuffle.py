@@ -62,9 +62,9 @@ def shuffle(old="tr", new="tr_sfl", delete_old=False, block_size = BLOCK_SIZE):
     n = images_pre.shape[0]
     blocks = make_tuple_pair(n, block_size)
     np.random.shuffle(blocks)
-    print(blocks)
 
-    for bl in blocks:
+    for i, bl in enumerate(blocks):
+        print(i+1, bl)
         im_pre = images_pre[bl[0]: bl[1]]
         im_post = images_post[bl[0]: bl[1]]
         la = labels[bl[0]: bl[1]]
