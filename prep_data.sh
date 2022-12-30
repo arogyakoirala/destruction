@@ -2,7 +2,8 @@
 source /usr/local/anaconda3/condabin/conda
 conda activate des-linux
 
-declare -a Cities=("aleppo" "damascus" "daraa" "deir-ez-zor" "hama" "homs" "idlib" "raqqa")
+# declare -a Cities=("aleppo" "damascus" "daraa" "deir-ez-zor" "hama" "homs" "idlib" "raqqa")
+declare -a Cities=("raqqa")
 
 for city in "${Cities[@]}"; do
     echo "Sampling:" $city
