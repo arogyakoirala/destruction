@@ -48,7 +48,9 @@ def read_raster(source:str, band:int=None, window=None, dtype:str='uint8', profi
         image = np.expand_dims(image, 0)
     else: 
         image = raster.read(window=window)
-    image = image.transpose([1, 2, 0]).astype(dtype)
+    # print(image.shape)
+    # image = image.transpose([1, 2, 0]).astype(dtype)
+    image = image.transpose([1, 2, 0])
     if profile:
         return image, raster.profile
     else:
@@ -57,7 +59,7 @@ def read_raster(source:str, band:int=None, window=None, dtype:str='uint8', profi
 
 def tile_sequences(images:np.ndarray, tile_size:tuple=(128, 128)) -> np.ndarray:
     '''Converts images to sequences of tiles'''
-    n_images, image_height, image_width, n_bands = images.shape
+    n_images, image_width, image_height, n_bands = images.shape
     tile_width, tile_height = tile_size
     assert image_width  % tile_width  == 0
     assert image_height % tile_height == 0
@@ -160,8 +162,9 @@ for j, pre_image in enumerate(pre_images):
         label = np.delete(label, unc, 0)
 
         image = post_images[i]
-        print(f"Reading post image.. {post_images[i]}")
+        print(f"Tiling post image.. {post_images[i]}")
         image = read_raster(image)
+        a = image
         image = tile_sequences(np.array([image]))
         image = np.squeeze(image)
         image = np.delete(image, unc, 0)
@@ -179,7 +182,11 @@ for j, pre_image in enumerate(pre_images):
         # pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
 
         # image_tr = image_tr.reshape(*image_tr.shape)
+        # print(pre_image_tr.shape)
+        # print(image_tr.shape)
+
         pre_image_tr = np.squeeze(pre_image_tr)
+
         save_zarr(pre_image_tr, CITY, 'im_tr_pre', path=DATA_DIR)
         save_zarr(image_tr, CITY, 'im_tr_post', path=DATA_DIR)
         save_zarr(label_tr, CITY, 'la_tr', path=DATA_DIR)
@@ -212,13 +219,17 @@ index = random.randint(0,tr_pre.shape[0] - 10)
 # print("Post",tr_post.shape)
 # print(la_tr.shape)
 
+fig, ax = plt.subplots(1,1,dpi=200)
+ax.imshow(a)
+plt.suptitle("Original Image")
+plt.savefig(f"{DATA_DIR}/{CITY}/others/orig.png")
+del a
+
 fig, ax = plt.subplots(2,5,dpi=200, figsize=(25,10))
 ax = ax.flatten()
 for i, image in enumerate(tr_pre[index:index+5]):
-    print(image)
     ax[i].imshow(image)
 for i, image in enumerate(tr_post[index:index+5]):
-    print(image)
     ax[i+5].imshow(image)
 plt.suptitle("Training set (sample images; top=pre, bottom=post)")
 plt.savefig(f"{DATA_DIR}/{CITY}/others/tr_samples.png")
@@ -245,7 +256,7 @@ for i, image in enumerate(te_post[index:index+5]):
 plt.suptitle("Test set (sample images; top=pre, bottom=post)")
 plt.savefig(f"{DATA_DIR}/{CITY}/others/te_samples.png")
 
-print("Sanity Check 1: Validation")
+print("Sanity Check 3: Validation")
 va_pre = read_zarr(CITY, "im_va_pre", DATA_DIR)
 va_post = read_zarr(CITY, "im_va_post", DATA_DIR)
 la_va = read_zarr(CITY, "la_va", DATA_DIR)
