@@ -40,7 +40,7 @@ def pattern(city:str='.*', type:str='.*', date:str='.*', ext:str='tif') -> str:
     '''Regular expressions for search_data'''
     return f'^.*{city}/.*/{type}_{date}\.{ext}$'
 
-def read_raster(source:str, band:int=None, window=None, dtype:str='int32', profile:bool=False) -> np.ndarray:
+def read_raster(source:str, band:int=None, window=None, dtype:str='uint8', profile:bool=False) -> np.ndarray:
     '''Reads a raster as a numpy array'''
     raster = rasterio.open(source)
     if band is not None:
