@@ -296,7 +296,7 @@ f = open(f"{RUN_DIR}/metadata.txt", "a")
 f.write(f"\n######## Run parameters \n\n{parameters}")
 f.close()
 
-model = double_convolutional_network(
+model = siamese_convolutional_network(
     shape=(*PATCH_SIZE, 3),  
     args_encode = args_encode,
     args_dense = args_dense,
