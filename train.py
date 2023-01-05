@@ -159,10 +159,10 @@ f.close()
 
 # Begin SNN Code
 
-BATCH_SIZE = 32
+BATCH_SIZE = 128
 PATCH_SIZE = (128,128)
 FILTERS = [8]
-DROPOUT = [0.3, 0.31]
+DROPOUT = [0.15, 0.2]
 EPOCHS = [70, 100]
 UNITS = [32]
 LR = [0.01]
@@ -289,8 +289,8 @@ class SiameseGenerator(Sequence):
             return {'images_t0': X_pre, 'images_tt': X_post}
 
 
-gen_tr = SiameseGenerator((im_tr_pre, im_tr_post), la_tr)
-gen_va = SiameseGenerator((im_va_pre, im_va_post), la_va)
+gen_tr = SiameseGenerator((im_tr_pre, im_tr_post), la_tr, batch_size=BATCH_SIZE)
+gen_va = SiameseGenerator((im_va_pre, im_va_post), la_va, batch_size=BATCH_SIZE)
 
 
 # print(im_tr_pre.shape[i])
@@ -323,7 +323,7 @@ for j, ind in enumerate(indices):
 print("+++++++++", gen_tr.__len__())
 MODEL_STORAGE_LOCATION = f"{RUN_DIR}/model"
 training_callbacks = [
-    callbacks.EarlyStopping(monitor='val_auc', patience=10, restore_best_weights=True),
+    callbacks.EarlyStopping(monitor='val_auc', patience=5, restore_best_weights=True),
     callbacks.ModelCheckpoint(f'{MODEL_STORAGE_LOCATION}', monitor='val_auc', verbose=0, save_best_only=True, save_weights_only=False, mode='max')
 ]
 
@@ -370,7 +370,7 @@ if MODEL == 'triple':
     )
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
-model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy',metrics.AUC(num_thresholds=200, curve='ROC', name='auc')])
+model.compile(optimizer=optimizer, loss='binary_focal_crossentropy', metrics=['accuracy',metrics.AUC(num_thresholds=200, curve='ROC', name='auc')])
 model.summary()
 
 history = None
@@ -427,6 +427,10 @@ ax.set_xlabel('Recall')
 f = open(f"{RUN_DIR}/metadata.txt", "a")
 f.write("\n\n######## Test set performance\n\n")
 f.write(f'Test Set AUC Score for the ROC Curve: {roc_auc_test} \nAverage precision:  {np.mean(precision)}')
+print(f"""
+    Test Set AUC Score for the ROC Curve: {roc_auc_test} 
+    Average precision:  {np.mean(precision)}
+""")
 f.close()
 #display plot
 plt.savefig(f"{RUN_DIR}/pr_curve.png")
