@@ -17,14 +17,20 @@ import shutil
 CITIES = ['aleppo', 'raqqa']
 DATA_DIR = "../data"
 OUTPUT_DIR = "../outputs"
+MODEL = "double"
 
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--cities", help="Cities, comma separated. Eg: aleppo,raqqa,damascus")
+parser.add_argument("--model", help="One of snn, double")
 args = parser.parse_args()
 
 if args.cities:
     CITIES = [el.strip() for el in args.cities.split(",")]
+
+
+if args.model:
+    MODEL = args.model
 
 def read_zarr(city, suffix, path="../data"):
     path = f'{path}/{city}/others/{city}_{suffix}.zarr'
@@ -153,10 +159,10 @@ f.close()
 BATCH_SIZE = 32
 PATCH_SIZE = (128,128)
 FILTERS = [8]
-DROPOUT = [0.1, 0.15]
+DROPOUT = [0.3, 0.35]
 EPOCHS = [70, 100]
 UNITS = [8]
-LR = [0.002, 0.003, 0.004]
+LR = [0.01, 0.03, 0.1]
 
 
 def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
@@ -177,13 +183,12 @@ def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
 #     tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout')(tensor)
 #     return tensor
 
-def convolution_block(inputs, filters:int, dropout:float, name:str):
-    tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution1')(inputs)
-    tensor = layers.Activation('relu', name=f'{name}_activation1')(tensor)
-    tensor = layers.BatchNormalization(name=f'{name}_normalisation1')(tensor)
-    tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution2')(tensor)
-    tensor = layers.Activation('relu', name=f'{name}_activation2')(tensor)
-    tensor = layers.BatchNormalization(name=f'{name}_normalisation2')(tensor)
+def convolution_block(inputs, filters:int, dropout:float, name:str, n=1):
+
+    for i in range(n):
+        tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution{i+1}')(inputs)
+        tensor = layers.Activation('relu', name=f'{name}_activation{i+1}')(tensor)
+        tensor = layers.BatchNormalization(name=f'{name}_normalisation{i+1}')(tensor)
     tensor = layers.MaxPool2D(pool_size=(2, 2), name=f'{name}_pooling')(tensor)
     tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout')(tensor)
     return tensor
@@ -196,22 +201,22 @@ def distance_layer(inputs):
 
 
 
-def encoder_block_separated(inputs, filters:int=1, dropout=0, name:str=''):
-    tensor  = convolution_block(inputs, filters=filters*1, dropout=dropout, name=f'{name}_block1')
-    tensor  = convolution_block(tensor, filters=filters*2, dropout=dropout, name=f'{name}_block2')
-    tensor  = convolution_block(tensor, filters=filters*3, dropout=dropout, name=f'{name}_block3')
-    tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, name=f'{name}_block4')
-    tensor  = convolution_block(tensor, filters=filters*5, dropout=dropout, name=f'{name}_block5')
+def encoder_block_separated(inputs, filters:int=1, dropout=0, n=1, name:str=''):
+    tensor  = convolution_block(inputs, filters=filters*1, dropout=dropout, n=n, name=f'{name}_block1')
+    tensor  = convolution_block(tensor, filters=filters*2, dropout=dropout, n=n, name=f'{name}_block2')
+    tensor  = convolution_block(tensor, filters=filters*3, dropout=dropout, n=n, name=f'{name}_block3')
+    tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, n=n, name=f'{name}_block4')
+    tensor  = convolution_block(tensor, filters=filters*5, dropout=dropout, n=n, name=f'{name}_block5')
     outputs = layers.Flatten(name=f'{name}_flatten')(tensor)
     return outputs
 
-def encoder_block_shared(shape:tuple, filters:int=1, dropout=0):
+def encoder_block_shared(shape:tuple, filters:int=1, n=1, dropout=0):
     inputs  = layers.Input(shape=shape, name='inputs')
-    tensor  = convolution_block(inputs, filters=filters*1, dropout=dropout, name='block1')
-    tensor  = convolution_block(tensor, filters=filters*2, dropout=dropout, name='block2')
-    tensor  = convolution_block(tensor, filters=filters*3, dropout=dropout, name='block3')
-    tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, name='block4')
-    tensor  = convolution_block(tensor, filters=filters*5, dropout=dropout, name='block5')
+    tensor  = convolution_block(inputs, filters=filters*1, dropout=dropout, n=n, name='block1')
+    tensor  = convolution_block(tensor, filters=filters*2, dropout=dropout, n=n, name='block2')
+    tensor  = convolution_block(tensor, filters=filters*3, dropout=dropout, n=n, name='block3')
+    tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, n=n, name='block4')
+    tensor  = convolution_block(tensor, filters=filters*5, dropout=dropout, n=n, name='block5')
     outputs = layers.GlobalAveragePooling2D(name='global_pooling')(tensor)
     encoder = models.Model(inputs=inputs, outputs=outputs, name='encoder')
     return encoder
@@ -285,10 +290,38 @@ class SiameseGenerator(Sequence):
 gen_tr = SiameseGenerator((im_tr_pre, im_tr_post), la_tr)
 gen_va = SiameseGenerator((im_va_pre, im_va_post), la_va)
 
+
+# print(im_tr_pre.shape[i])
+
+indices = np.random.randint(0, im_tr_pre.shape[0]//32, 5)
+
+for j, ind in enumerate(indices):
+    fig, ax = plt.subplots(2,8,dpi=400, figsize=(25,6))
+    ax = ax.flatten()
+    for i, image in enumerate(gen_tr.__getitem__(ind)[0]['images_t0'][0:8]):
+        ax[i].imshow(image)
+        ax[i].set_title(gen_tr.__getitem__(ind)[1][i] == 1)
+    for i, image in enumerate(gen_tr.__getitem__(ind)[0]['images_tt'][0:8]):
+        ax[i+8].imshow(image)
+    plt.suptitle("Training set (sample images; top=pre, bottom=post)")
+    plt.tight_layout()
+    plt.savefig(f"{RUN_DIR}/traing_data_samples_{j+1}.png")
+
+
+
+# fig, ax = plt.subplots(2,5,dpi=200, figsize=(25,10))
+# ax = ax.flatten()
+# for i, image in enumerate(tr_pre[index:index+5]):
+#     ax[i].imshow(image)
+# for i, image in enumerate(tr_post[index:index+5]):
+#     ax[i+5].imshow(image)
+# plt.suptitle("Training set (sample images; top=pre, bottom=post)")
+# plt.savefig(f"{DATA_DIR}/{CITY}/others/tr_samples.png")
+
 print("+++++++++", gen_tr.__len__())
 MODEL_STORAGE_LOCATION = f"{RUN_DIR}/model"
 training_callbacks = [
-    callbacks.EarlyStopping(monitor='val_auc', patience=5, restore_best_weights=True),
+    callbacks.EarlyStopping(monitor='val_auc', patience=10, restore_best_weights=True),
     callbacks.ModelCheckpoint(f'{MODEL_STORAGE_LOCATION}', monitor='val_auc', verbose=0, save_best_only=True, save_weights_only=False, mode='max')
 ]
 
@@ -302,7 +335,6 @@ lr = random.choice(LR)
 args  = dict(filters=filters, dropout=dropout, units=units) # ! Check parameters before run
 
 
-args_encode = dict(filters=filters, dropout=dropout)
 args_dense  = dict(units=units, dropout=dropout)
 parameters = f'filters={filters}, \ndropout={np.round(dropout, 4)}, \nepochs={epochs}, \nunits={units}, \nlearning_rate={lr}'
 print(parameters)
@@ -310,16 +342,36 @@ f = open(f"{RUN_DIR}/metadata.txt", "a")
 f.write(f"\n######## Run parameters \n\n{parameters}")
 f.close()
 
-model = siamese_convolutional_network(
-    shape=(*PATCH_SIZE, 3),  
-    args_encode = args_encode,
-    args_dense = args_dense,
-)
+if MODEL == 'snn':
+    args_encode = dict(filters=filters, dropout=dropout, n=1)
+    model = siamese_convolutional_network(
+        shape=(*PATCH_SIZE, 3),  
+        args_encode = args_encode,
+        args_dense = args_dense,
+    )
+
+if MODEL == 'double':
+    args_encode = dict(filters=filters, dropout=dropout, n=2)
+    
+    model = double_convolutional_network(
+        shape=(*PATCH_SIZE, 3),  
+        args_encode = args_encode,
+        args_dense = args_dense,
+    )
+
+if MODEL == 'triple':
+    args_encode = dict(filters=filters, dropout=dropout, n=3)
+    model = double_convolutional_network(
+        shape=(*PATCH_SIZE, 3),  
+        args_encode = args_encode,
+        args_dense = args_dense,
+    )
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
 model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy',metrics.AUC(num_thresholds=200, curve='ROC', name='auc')])
 model.summary()
 
+history = None
 
 try:
   history = model.fit(
@@ -350,7 +402,8 @@ def plot_training(H):
 	plt.legend(loc="lower left")
 	plt.savefig(f"{RUN_DIR}/training.png")
 
-plot_training(history)
+if history:
+    plot_training(history)
 
 # model_path = f'{MODEL_DIR}/{CITY}/snn/run_{i}'
 best_model = load_model(MODEL_STORAGE_LOCATION, custom_objects={'auc':metrics.AUC(num_thresholds=200, curve='ROC', name='auc')})

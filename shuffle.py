@@ -8,10 +8,11 @@ import matplotlib.pyplot as plt
 
 
 
+
 # SUFFIX = 'im'
 CITY = 'aleppo'
 DATA_DIR = "../data"
-BLOCK_SIZE = 2000
+BLOCK_SIZE = 100
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -71,12 +72,15 @@ def shuffle(old="tr", new="tr_sfl", delete_old=False, block_size = BLOCK_SIZE):
 
         r = np.arange(0, bl[1] - bl[0])
         np.random.shuffle(r)
+        # print(r)
+        
         im_pre = im_pre[r]
         im_post = im_post[r]
         la = la[r]
+
         save_zarr(data=im_pre, city=CITY, suffix=f"im_{new}_pre", path=DATA_DIR)
         save_zarr(data=im_post, city=CITY, suffix=f"im_{new}_post", path=DATA_DIR)
-        save_zarr(data=la[r], city=CITY, suffix=f"la_{new}", path=DATA_DIR)
+        save_zarr(data=la, city=CITY, suffix=f"la_{new}", path=DATA_DIR)
 
     if delete_old == True:
         delete_zarr_if_exists(CITY, f"im_{old}_pre", DATA_DIR)
