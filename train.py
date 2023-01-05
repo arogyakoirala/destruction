@@ -71,7 +71,7 @@ runs = [f for f in os.listdir(OUTPUT_DIR) if ".log" not in f]
 runs = [f for f in runs if ".DS_Store" not in f]
 run_id = len(runs)+1
 
-print(f"Run ID: {run_id} (use this code for dense_predict.py) \n\n")
+print(f"\n\n### Run ID: {run_id} (use this code for dense_predict.py) \n\n")
 time.sleep(5)
 
 
@@ -104,7 +104,7 @@ for city in CITIES:
     la_te = read_zarr(city, "la_te", DATA_DIR)
 
 
-    steps = make_tuple_pair(im_tr_pre.shape[0], 20000)
+    steps = make_tuple_pair(im_tr_pre.shape[0], 5000)
     
     for i, st in enumerate(steps):
         _im_tr_pre = im_tr_pre[st[0]:st[1]]
