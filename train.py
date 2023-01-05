@@ -104,9 +104,9 @@ for city in CITIES:
     la_te = read_zarr(city, "la_te", DATA_DIR)
 
 
-    steps = make_tuple_pair(im_tr_pre.shape[0], 5000)
+    steps = make_tuple_pair(im_tr_pre.shape[0], 20000)
     
-    for st in steps:
+    for i, st in enumerate(steps):
         _im_tr_pre = im_tr_pre[st[0]:st[1]]
         _im_tr_post = im_tr_post[st[0]:st[1]]
         _la_tr = la_tr[st[0]:st[1]]
@@ -130,6 +130,9 @@ for city in CITIES:
         save_zarr(_im_te_pre, f"{RUN_DIR}/im_te_pre.zarr")
         save_zarr(_im_te_post, f"{RUN_DIR}/im_te_post.zarr")
         save_zarr(_la_te, f"{RUN_DIR}/la_te.zarr")
+
+        print(f"Copied {i+1} out of {len(steps)} blocks..")
+
 
 
 im_tr_pre = zarr.open(f"{RUN_DIR}/im_tr_pre.zarr")
@@ -159,10 +162,10 @@ f.close()
 BATCH_SIZE = 32
 PATCH_SIZE = (128,128)
 FILTERS = [8]
-DROPOUT = [0.3, 0.35]
+DROPOUT = [0.3, 0.31]
 EPOCHS = [70, 100]
-UNITS = [8]
-LR = [0.01, 0.03, 0.1]
+UNITS = [32]
+LR = [0.01]
 
 
 def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
@@ -184,7 +187,6 @@ def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
 #     return tensor
 
 def convolution_block(inputs, filters:int, dropout:float, name:str, n=1):
-
     for i in range(n):
         tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution{i+1}')(inputs)
         tensor = layers.Activation('relu', name=f'{name}_activation{i+1}')(tensor)
@@ -343,7 +345,7 @@ f.write(f"\n######## Run parameters \n\n{parameters}")
 f.close()
 
 if MODEL == 'snn':
-    args_encode = dict(filters=filters, dropout=dropout, n=1)
+    args_encode = dict(filters=filters, dropout=dropout, n=2)
     model = siamese_convolutional_network(
         shape=(*PATCH_SIZE, 3),  
         args_encode = args_encode,
