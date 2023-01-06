@@ -100,7 +100,7 @@ class SiameseGenerator(Sequence):
         else:
             return {'images_t0': X_pre, 'images_tt': X_post}
 
-def read_raster(source:str, band:int=None, window=None, dtype:str='int', profile:bool=False) -> np.ndarray:
+def read_raster(source:str, band:int=None, window=None, dtype:str='uint8', profile:bool=False) -> np.ndarray:
     '''Reads a raster as a numpy array'''
     raster = rasterio.open(source)
     if band is not None:
@@ -108,11 +108,14 @@ def read_raster(source:str, band:int=None, window=None, dtype:str='int', profile
         image = np.expand_dims(image, 0)
     else: 
         image = raster.read(window=window)
+    # print(image.shape)
+    # image = image.transpose([1, 2, 0]).astype(dtype)
     image = image.transpose([1, 2, 0]).astype(dtype)
     if profile:
         return image, raster.profile
     else:
         return image
+
 
 def write_raster(array:np.ndarray, profile, destination:str, nodata:int=None, dtype:str='float64') -> None:
     '''Writes a numpy array as a raster'''
