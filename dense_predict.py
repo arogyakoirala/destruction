@@ -71,7 +71,7 @@ def search_data(pattern:str='.*', directory:str='../data') -> list:
             files.append(os.path.join(root, file_name))
     files = list(filter(re.compile(pattern).search, files))
     files.sort()
-    if len(files) == 1: files = files[0]
+    if len(files) == 1: files = files
     return files
 
 
@@ -168,11 +168,16 @@ for city in CITIES:
     pre_images  = search_data(pattern='^.*tif', directory=f'{DATA_DIR}/{city}/images/pre')
     post_images  = search_data(pattern='^.*tif', directory=f'{DATA_DIR}/{city}/images/post')
 
+    print(pre_images)
+    print(post_images)
+
     _pred_dir = f"{PRED_DIR}/{city}"
     Path(_pred_dir).mkdir(parents=True, exist_ok=True)
 
-    for j, pre_image in enumerate(pre_images):
-        pre_image = read_raster(pre_images[j])
+
+    for j, pre in enumerate(pre_images):
+        print(pre)
+        pre_image = read_raster(pre)
         pre_image = tile_sequences(np.array([pre_image]), TILE_SIZE)
         pre_image = np.squeeze(pre_image)
 
@@ -180,7 +185,7 @@ for city in CITIES:
 
         for i in range(len(post_images)):
             image = post_images[i]
-            profile = tiled_profile(image, tile_size=(*TILE_SIZE, 1))
+            profile = tiled_profile(image, tile_size=(*TILE_SIZE, 3))
             image = read_raster(image)
             image = tile_sequences(np.array([image]))
             image = np.squeeze(image)
