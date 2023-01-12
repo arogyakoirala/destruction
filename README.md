@@ -5,6 +5,21 @@ Follow-up project using Mueller et al. Monitoring war destruction from space usi
 # Step-by-step instructions
 This sections contains step by step instructions on how to get the code running on your system. 
 
+* [1. High-level folder structure](#1-high-level-folder-structure)
+* [2. The data directory.](#2-the-data-directory)
+* [3. The destruction directory.](#3-the-destruction-directory)
+    * [Environment setup](#environment-setup)
+        * [Step 0: Create a virtual environment (one-time only)](#step-0-create-a-virtual-environment-one-time-only)
+        * [Step 1: Activate the virtual environment:](#step-1-activate-the-virtual-environment)
+        * [Step 2 (optional) Check if virtual environment is ready:](#step-2-optional-check-if-virtual-environment-is-ready)
+* [4. Data preprocessing.](#4-data-preprocessing)
+    * [One shot setup](#one-shot-setup)
+    * [Step-by-step setup](#step-by-step-setup)
+* [5. Model training and optimization.](#5-model-training-and-optimization)
+    * [Examples](#examples)
+    * [A note on managing different runs](#a-note-on-managing-different-runs)
+* [6. Generating dense predictions.](#6-generating-dense-predictions)
+
 In this document, we're assuming that satellite imagery for different cities has already been downloaded and is ready to use.
 
 A note on satellite imagery format: Make sure that,
@@ -14,8 +29,7 @@ A note on satellite imagery format: Make sure that,
 * The raster is formatted as 8-bits unsigned integers.
 * The raster is named city/image_YYYY_MM_DD
 
-## 1. Project Organization
-<hr>
+## 1. High-level folder structure
 
 Have a root directory to host all the project files. In any location in your computer:
 
@@ -35,7 +49,6 @@ The `mwd` directory is your project root, this is where we are going to organize
 
 
 ## 2. The data directory.
-----
 
 For the code to run, the data directory must have:
 
@@ -79,7 +92,6 @@ Here's what the structure looks like for the city of aleppo:
 ```
 
 ## 3. The destruction directory.
-----
 
 The `mwd/destruction` directory will contain code present in this repo. To set it up:
 
@@ -128,7 +140,6 @@ python checkenv.py
 
 
 ## 4. Data Preprocessing
-----
 
 At a high level the following steps are carried out in the setup step for each city:
 
@@ -184,7 +195,8 @@ The following 9 zarr files will be generated:
 |-------------------- aleppo_la_tr.zarr (labels; training set)
 |-------------------- aleppo_im_va_pre.zarr (pre images; validation set)
 |-------------------- aleppo_im_va_post.zarr (post images; validation set)
-|-------------------- aleppo_la_va.zarr (labels; validation set)|-------------------- aleppo_im_te_pre.zarr (pre images; test set)
+|-------------------- aleppo_la_va.zarr (labels; validation set)
+|-------------------- aleppo_im_te_pre.zarr (pre images; test set)
 |-------------------- aleppo_im_te_post.zarr (post images; test set)
 |-------------------- aleppo_la_te.zarr (labels; test set)
 ```
@@ -204,7 +216,6 @@ It is advisable to run the shuffling step twice to ensure the data is properly s
 We are now ready to proceed with model training and optimization.
 
 ## 5. Model training and optimization
-----
 The model training code is designed in a way to facilitate many runs (provided there's enough memory in the machine to do so). For each model run, you can specify:
 
 1. The cities from which to use data for the model training step.
@@ -252,7 +263,7 @@ What we're bottlenecked by, however, is the fact that for each RUN_ID, the /outp
 
 
 ## 6. Generating dense predictions:
-----
+
 You will use the RUN_ID to specify what trained model you're generating predictions for. Currently, the code supports dense prediction generation at the city level.
 
 To generate predictions: `python dense_predict.py REPLACE_WITH_RUN_ID --cities aleppo,daraa`
