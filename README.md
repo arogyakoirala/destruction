@@ -33,7 +33,9 @@ A note on satellite imagery format: Make sure that,
 
 Have a root directory to host all the project files. In any location in your computer:
 
-```mkdir mwd```
+```
+mkdir mwd
+```
 
 The `mwd` directory is your project root, this is where we are going to organize our data and code. At the high level it should contain the following subdirectories
 
@@ -103,15 +105,13 @@ cd mwd
 git clone https://github.com/arogyakoirala/destruction.git
 ```
 
-This is the folder we run code from. To run code however, we need to make sure the python environment is all set up, let's do that now:
-
-```sh
-cd destruction
-```
+This is the folder we run code from. 
 
 ### Environment setup
 
-This code requires certain libraries, and we need to make sure these are installed. This section describes how you can do that.
+This code requires certain libraries, and we need to make sure these are installed. This section describes how you can do that. 
+
+
 
 #### Step 0: Create a virtual environment (one-time only)
 ```
@@ -154,7 +154,7 @@ At a high level the following steps are carried out in the setup step for each c
 
 ### One shot setup
 
-Proivided the data directory is ready according to the guidelines above, a master shell script allows us to carry all of these steps in one shot. To do this, make sure the python environment is loaded, and then run the following commands:
+Proivided the data directory is ready according to the guidelines above, a master shell script allows us to carry all of these steps in one shot. To do this, [make sure the python environment is loaded](#environment-setup), and then run the following commands:
 
 ```sh
 cd mwd
@@ -167,16 +167,19 @@ If you want more flexibility, follow the instruction on the step-by-step setup s
 We are now ready to proceed with model training and optimization.
 
 ### Step-by-step setup
+
+
+
 In the setup step, for each city:
 
 1. We first isolate the analysis region, by using the shapefiles for settlement regfons and no-analysis zone. We also use an image (any image) from the city to crop the analysis region into the image bounds.
 2. We then divide this analysis region into patches of 128 pixels, and randomly assign patches to the train, test, and validation set. This is the sampling step. We store thijs information in a raster file called {city}_sample.tif inside the `data/{city}/others/` folder
 
-> Steps one and two are automatically carried out my running sample.py and specifying the city as a parameter: `python sample.py --city aleppo` 
+> Steps one and two are automatically carried out my running sample.py and specifying the city as a parameter. [Ensure that the python environment is loaded](#environment-setup) and then run: `python sample.py --city aleppo` 
 
 3. We then proceed to label augmentation at the patch level. This is done using the damage annotations shapefiles and the sampling raster. The result will be patch-level rasters for each imagery date, which will be stored in the `/data/{city}/labels` folder.
 
-> For label augmentation, use: `python label.py --city aleppo`. 
+> For label augmentation, [ensure that the python environment is loaded](#environment-setup) and then run: `python label.py --city aleppo`. 
 >
 > **Check:** *To check if this worked correctly, you can open any label raster (from) `/data/{city}/labels` folder in QGIS and overlay the damage annotation shapefile. TUse visual inspection to validate if label assignment has been done correctly.*
 
@@ -201,15 +204,15 @@ The following 9 zarr files will be generated:
 |-------------------- aleppo_la_te.zarr (labels; test set)
 ```
 
-> Run the tiling step using: `python tile.py --city aleppo` 
+> To run the tiling step, [ensure that the python environment is loaded](#environment-setup) and then run: `python tile.py --city aleppo` 
 
 5. The next step is balancing the data, where we append randomly selected positive examples (with replacement) to the zarr files so there's a 50-50 split between positive and negative examples:
 
-> Run the balancing step using: `python balance.py --city aleppo`
+> To run the balancing step, [ensure that the python environment is loaded](#environment-setup) and then run: `python balance.py --city aleppo`
 
 6. The final step is to shuffle the data. 
 
-> Run the balancing step using: `python shuffle.py --city aleppo`
+> To run the shuffling step, [ensure that the python environment is loaded](#environment-setup) and then run: `python shuffle.py --city aleppo`
 
 It is advisable to run the shuffling step twice to ensure the data is properly shuffled.
 
@@ -225,23 +228,18 @@ The model training code is designed in a way to facilitate many runs (provided t
 
 
 ### Examples
-1. Train double convolution network using data from aleppo and raqqa: `python train.py --cities aleppo,raqqa --model double`
+1. To train double convolution network using data from aleppo and raqqa, , [ensure that the python environment is loaded](#environment-setup) and then run: `python train.py --cities aleppo,raqqa --model double`
 
 
-2. Train siamese network using data from aleppo, raqqa, damascus, homs:
-
-```sh
+2. To train siamese network using data from aleppo, raqqa, damascus, homs, [ensure that the python environment is loaded](#environment-setup) and then run:`
 python train.py --cities aleppo,raqqa,damascus,homs --model snn
-```
+`
 
-3. Train double convolution network using data from aleppo only:
-```sh
-python train.py --cities aleppo --model snn
-```
+3. To train double convolution network using data from aleppo only, [ensure that the python environment is loaded](#environment-setup) and then run:`python train.py --cities aleppo --model snn`
 
 #### Run as background process:
 
-To run in background, use nohup: `nohup python -u train.py --cities aleppo,raqqa --model double > logfile.out &`
+To run in background, [ensure that the python environment is loaded](#environment-setup) and then use nohup: `nohup python -u train.py --cities aleppo,raqqa --model double > logfile.out &`
 
 This runs the command in the background and logs out all the ouput to `mwd/destruction/logfile.out`. Make sure the logfile doesnt exist prior to this step, or use a differen name everytime. To monitor progress, you can simply review the last line on logfile.out
 
@@ -266,7 +264,7 @@ What we're bottlenecked by, however, is the fact that for each RUN_ID, the /outp
 
 You will use the RUN_ID to specify what trained model you're generating predictions for. Currently, the code supports dense prediction generation at the city level.
 
-To generate predictions: `python dense_predict.py REPLACE_WITH_RUN_ID --cities aleppo,daraa`
+To generate predictions, [ensure that the python environment is loaded](#environment-setup) and then run: `python dense_predict.py REPLACE_WITH_RUN_ID --cities aleppo,daraa`
 
 The prediction results will be found in the `mwd/outputs/{RUN_ID}/predictions`
 
@@ -276,6 +274,6 @@ The ouputs are patch level raster files which contain the probability of damage 
 
 #### Run as background process:
 
-To run in background, use nohup: `nohup python -u dense_predict.py REPLACE_WITH_RUN_ID --cities aleppo,raqqa --model double > logfile_predict.out &`
+To run in background, [ensure that the python environment is loaded](#environment-setup) and then use nohup: `nohup python -u dense_predict.py REPLACE_WITH_RUN_ID --cities aleppo,raqqa --model double > logfile_predict.out &`
 
 This runs the command in the background and logs out all the ouput to `mwd/destruction/logfile_predict.out`. Make sure the logfile doesnt exist prior to this step, or use a differen name everytime. To monitor progress, you can simply review the last line on logfile.out
