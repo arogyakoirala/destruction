@@ -203,22 +203,18 @@ def distance_layer(inputs):
 
 
 
-def encoder_block_separated(inputs, filters:int=1, dropout=0, n=1, name:str=''):
-    tensor  = convolution_block(inputs, filters=filters*1, dropout=dropout, n=n, name=f'{name}_block1')
-    tensor  = convolution_block(tensor, filters=filters*2, dropout=dropout, n=n, name=f'{name}_block2')
-    tensor  = convolution_block(tensor, filters=filters*3, dropout=dropout, n=n, name=f'{name}_block3')
-    tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, n=n, name=f'{name}_block4')
-    tensor  = convolution_block(tensor, filters=filters*5, dropout=dropout, n=n, name=f'{name}_block5')
+def encoder_block_separated(inputs, filters:int=1, dropout=0, n_convs=1, n_blocks=5, name:str=''):
+    for i in range(n_blocks):
+        tensor  = convolution_block(inputs, filters=filters*(i+1), dropout=dropout, n=n_convs, name=f'{name}_block{i+1}')
+
     outputs = layers.Flatten(name=f'{name}_flatten')(tensor)
     return outputs
 
-def encoder_block_shared(shape:tuple, filters:int=1, n=1, dropout=0):
-    inputs  = layers.Input(shape=shape, name='inputs')
-    tensor  = convolution_block(inputs, filters=filters*1, dropout=dropout, n=n, name='block1')
-    tensor  = convolution_block(tensor, filters=filters*2, dropout=dropout, n=n, name='block2')
-    tensor  = convolution_block(tensor, filters=filters*3, dropout=dropout, n=n, name='block3')
-    tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, n=n, name='block4')
-    tensor  = convolution_block(tensor, filters=filters*5, dropout=dropout, n=n, name='block5')
+def encoder_block_shared(shape:tuple, filters:int=1, n_convs=1, n_blocks=5, dropout=0):
+    inputs  = layers.Input(shape=shape, name='inputs'),
+    for i in range(n_blocks):
+        tensor  = convolution_block(inputs, filters=filters*(i+1), dropout=dropout, n=n_convs, name=f'block{i+1}')
+    
     outputs = layers.GlobalAveragePooling2D(name='global_pooling')(tensor)
     encoder = models.Model(inputs=inputs, outputs=outputs, name='encoder')
     return encoder
@@ -345,7 +341,7 @@ f.write(f"\n######## Run parameters \n\n{parameters}")
 f.close()
 
 if MODEL == 'snn':
-    args_encode = dict(filters=filters, dropout=dropout, n=2)
+    args_encode = dict(filters=filters, dropout=dropout, n_blocks=5, n_convs=2)
     model = siamese_convolutional_network(
         shape=(*PATCH_SIZE, 3),  
         args_encode = args_encode,
@@ -353,7 +349,7 @@ if MODEL == 'snn':
     )
 
 if MODEL == 'double':
-    args_encode = dict(filters=filters, dropout=dropout, n=2)
+    args_encode = dict(filters=filters, dropout=dropout, n_blocks=5, n_convs=2)
     
     model = double_convolutional_network(
         shape=(*PATCH_SIZE, 3),  
@@ -362,7 +358,7 @@ if MODEL == 'double':
     )
 
 if MODEL == 'triple':
-    args_encode = dict(filters=filters, dropout=dropout, n=3)
+    args_encode = dict(filters=filters, dropout=dropout,  n_blocks=5, n_convs=3)
     model = double_convolutional_network(
         shape=(*PATCH_SIZE, 3),  
         args_encode = args_encode,
