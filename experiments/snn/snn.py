@@ -32,7 +32,7 @@ FILTERS = [8]
 DROPOUT = [0.1, 0.15]
 EPOCHS = [70, 100]
 UNITS = [8]
-LR = [0.003, 0.003, 0.004]
+LR = [0.002, 0.003, 0.004]
 
 if args.suffix:
     SUFFIX = args.suffix
