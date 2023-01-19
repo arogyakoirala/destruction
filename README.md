@@ -2,7 +2,7 @@
 
 Extracting information on war related destruction is difficult because it relies on eyewitness accounts and manual detection on the field, which is not only costly for institutions carrying out these efforts, but also unsafe for the individuals carrying out this task. The information gathered is also incomplete, which makes it difficult for use in media reporting, carrying out humanitarian relief, understanding human rights violations, or academic reporting. This seminar introduces an automated approach to measure destruction in war damaged buildings by applying deep learning in publicly available satellite imagery. We adapt different neural network architectures and make them applicable for the building damage detection use case. As a proof of concept, we apply this method to the Syrian Civil War to reconstruct war destruction in these regions over time.
 
-This is a follow-up project using Mueller et al. Monitoring war destruction from space using machine learning. Proceedings of the National Academy of Sciences, 118(23), 2021.
+*This is a follow-up project using Mueller et al. Monitoring war destruction from space using machine learning. Proceedings of the National Academy of Sciences, 118(23), 2021.*
 
 # Using this repository
 This sections contains step by step instructions on how to get the code running on your system. 
