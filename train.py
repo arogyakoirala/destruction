@@ -23,6 +23,8 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--cities", help="Cities, comma separated. Eg: aleppo,raqqa,damascus")
 parser.add_argument("--model", help="One of snn, double")
+parser.add_argument("--output_dir", help="Output dir")
+parser.add_argument("--data_dir", help="Path to data dir")
 args = parser.parse_args()
 
 if args.cities:
@@ -31,6 +33,12 @@ if args.cities:
 
 if args.model:
     MODEL = args.model
+
+if args.output_dir:
+    OUTPUT_DIR = args.output_dir
+
+if args.data_dir:
+    DATA_DIR = args.data_dir
 
 def read_zarr(city, suffix, path="../data"):
     path = f'{path}/{city}/others/{city}_{suffix}.zarr'
