@@ -1,7 +1,7 @@
 #!/bin/bash
-EXERCISE_ENVIRONMENT="destruction"
-eval "$(conda shell.bash hook)"
-conda activate $EXERCISE_ENVIRONMENT
-python3 -u destruction-augment.py
-python3 -u destruction-ready-data-snn.py --balance --pre_image_index 0,1
-python3 -u destruction-optimize.py 
+EXERCISE_ENVIRONMENT="env"
+source /lustre/ific.uv.es/ml/iae091/env/bin/activate
+# eval "$(conda shell.bash hook)"
+# conda activate $EXERCISE_ENVIRONMENT
+chmod +x /lustre/ific.uv.es/ml/iae091/destruction/prep_data.sh
+/lustre/ific.uv.es/ml/iae091/destruction/prep_data.sh /lustre/ific.uv.es/ml/iae091/

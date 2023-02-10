@@ -9,5 +9,5 @@ error                   = condor_logs/errors.$(Cluster).$(Process).err
 getenv = True
 
 # TestJob CPU
-+testJob = True
+# +testJob = True
 queue
