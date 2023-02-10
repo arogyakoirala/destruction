@@ -25,6 +25,7 @@ parser.add_argument("--cities", help="Cities, comma separated. Eg: aleppo,raqqa,
 parser.add_argument("--model", help="One of snn, double")
 parser.add_argument("--output_dir", help="Output dir")
 parser.add_argument("--data_dir", help="Path to data dir")
+
 args = parser.parse_args()
 
 if args.cities:
@@ -169,11 +170,11 @@ f.close()
 
 BATCH_SIZE = 128
 PATCH_SIZE = (128,128)
-FILTERS = [8]
-DROPOUT = [0.15, 0.2]
+FILTERS = [4]
+DROPOUT = [0.15, 0.4]
 EPOCHS = [70, 100]
-UNITS = [32]
-LR = [0.01]
+UNITS = [4]
+LR = [0.01, 0.1, 0.001]
 
 
 def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
@@ -268,7 +269,7 @@ def double_convolutional_network(shape:tuple, args_encode:dict, args_dense:dict)
     return model
 
 class SiameseGenerator(Sequence):
-    def __init__(self, images, labels, batch_size=32, train=True):
+    def __init__(self, images, labels, batch_size=BATCH_SIZE, train=True):
         self.images_pre = images[0]
         self.images_post = images[1]
         self.labels = labels

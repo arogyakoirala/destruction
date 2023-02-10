@@ -16,11 +16,14 @@ TILE_SIZE = (128,128)
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--city", help="City")
+parser.add_argument("--data_dir", help="Data Dir")
 args = parser.parse_args()
 
 if args.city:
     CITY = args.city
 
+if args.data_dir:
+    DATA_DIR = args.data_dir
 
 def search_data(pattern:str='.*', directory:str='../data') -> list:
     '''Sorted list of files in a directory matching a regular expression'''
