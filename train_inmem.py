@@ -12,7 +12,7 @@ from sklearn.metrics import precision_recall_curve, roc_auc_score
 import matplotlib.pyplot as plt
 import time
 import shutil
-from sklearn.utils import shuffle
+
 
 CITIES = ['aleppo', 'raqqa']
 DATA_DIR = "../data"
@@ -91,7 +91,7 @@ f = open(f"{OUTPUT_DIR}/runs.log", "a")
 f.write(f"Run {run_id}: {CITIES} \n")
 f.close()
 
-# im_tr_pre = np.empty
+# im_tr_pre = None
 # im_tr_post = None
 # la_tr = None
 # im_va_pre = None
@@ -99,40 +99,73 @@ f.close()
 # la_va = None
 
 
-im_tr_pre = np.empty((0,128,128,3))
-im_tr_post = np.empty((0,128,128,3))
-im_te_pre = np.empty((0,128,128,3))
-im_te_post = np.empty((0,128,128,3))
-im_va_pre = np.empty((0,128,128,3))
-im_va_post = np.empty((0,128,128,3))
-
-la_tr = np.empty((0))
-la_te = np.empty((0))
-la_va = np.empty((0))
-
-
-
 for city in CITIES:
-    im_tr_pre = np.concatenate((im_tr_pre, read_zarr(city, "im_tr_pre", DATA_DIR)[:]), axis=0)
-    im_tr_post = np.concatenate((im_tr_post, read_zarr(city, "im_tr_post", DATA_DIR)[:]), axis=0)
-    la_tr = np.concatenate((la_tr, read_zarr(city, "la_tr", DATA_DIR)[:]), axis=0)
+    im_tr_pre = read_zarr(city, "im_tr_pre", DATA_DIR)
+    im_tr_post = read_zarr(city, "im_tr_post", DATA_DIR)
+    la_tr= read_zarr(city, "la_tr", DATA_DIR)
+
+    im_va_pre = read_zarr(city, "im_va_pre", DATA_DIR)
+    im_va_post = read_zarr(city, "im_va_post", DATA_DIR)
+    la_va = read_zarr(city, "la_va", DATA_DIR)
+
+    im_te_pre = read_zarr(city, "im_te_pre", DATA_DIR)
+    im_te_post = read_zarr(city, "im_te_post", DATA_DIR)
+    la_te = read_zarr(city, "la_te", DATA_DIR)
+
+
+    steps = make_tuple_pair(im_tr_pre.shape[0], 100000) 
+    for i, st in enumerate(steps):
+        _im_tr_pre = im_tr_pre[st[0]:st[1]]
+        _im_tr_post = im_tr_post[st[0]:st[1]]
+        _la_tr = la_tr[st[0]:st[1]]
+
+        save_zarr(_im_tr_pre, f"{RUN_DIR}/im_tr_pre.zarr")
+        save_zarr(_im_tr_post, f"{RUN_DIR}/im_tr_post.zarr")
+        save_zarr(_la_tr, f"{RUN_DIR}/la_tr.zarr")
+        
+        del _im_tr_pre, _im_tr_post, _la_tr
+        print(f"{city} - TR: Copied {i+1} out of {len(steps)} blocks..")
+
+
+    steps = make_tuple_pair(im_va_pre.shape[0], 50000) 
+    for i, st in enumerate(steps):
+        _im_va_pre = im_va_pre[st[0]:st[1]]
+        _im_va_post = im_va_post[st[0]:st[1]]
+        _la_va = la_va[st[0]:st[1]]
+
+        save_zarr(_im_va_pre, f"{RUN_DIR}/im_va_pre.zarr")
+        save_zarr(_im_va_post, f"{RUN_DIR}/im_va_post.zarr")
+        save_zarr(_la_va, f"{RUN_DIR}/la_va.zarr")
+        
+        del _im_va_pre, _im_va_post, _la_va
+        print(f"{city} - VA: Copied {i+1} out of {len(steps)} blocks..")
+
+    steps = make_tuple_pair(im_te_pre.shape[0], 50000) 
+    for i, st in enumerate(steps):
+        _im_te_pre = im_te_pre[st[0]:st[1]]
+        _im_te_post = im_te_post[st[0]:st[1]]
+        _la_te = la_te[st[0]:st[1]]
+
+        save_zarr(_im_te_pre, f"{RUN_DIR}/im_te_pre.zarr")
+        save_zarr(_im_te_post, f"{RUN_DIR}/im_te_post.zarr")
+        save_zarr(_la_te, f"{RUN_DIR}/la_te.zarr")
+
+        del _im_te_pre, _im_te_post, _la_te
+        print(f"{city} - TE: Copied {i+1} out of {len(steps)} blocks..")
 
 
 
-    im_va_pre = np.concatenate((im_va_pre, read_zarr(city, "im_va_pre", DATA_DIR)[:]), axis=0)
-    im_va_post = np.concatenate((im_va_post, read_zarr(city, "im_va_post", DATA_DIR)[:]), axis=0)
-    la_va = np.concatenate((la_va, read_zarr(city, "la_va", DATA_DIR)[:]), axis=0)
-    
-    im_te_pre = np.concatenate((im_te_pre, read_zarr(city, "im_te_pre", DATA_DIR)[:]), axis=0)
-    im_te_post = np.concatenate((im_te_post, read_zarr(city, "im_te_post", DATA_DIR)[:]), axis=0)
-    la_te = np.concatenate((la_te, read_zarr(city, "la_te", DATA_DIR)[:]), axis=0)
+im_tr_pre = zarr.open(f"{RUN_DIR}/im_tr_pre.zarr")[:]
+im_tr_post = zarr.open(f"{RUN_DIR}/im_tr_post.zarr")[:]
+la_tr= zarr.open(f"{RUN_DIR}/la_tr.zarr")[:]
 
+im_va_pre = zarr.open(f"{RUN_DIR}/im_va_pre.zarr")[:]
+im_va_post = zarr.open(f"{RUN_DIR}/im_va_post.zarr")[:]
+la_va = zarr.open(f"{RUN_DIR}/la_va.zarr")[:]
 
-    
-shuffler = np.random.permutation(len(im_tr_pre))
-im_tr_pre = im_tr_pre[shuffler]
-im_tr_post = im_tr_post[shuffler]
-la_tr = la_tr[shuffler]
+im_te_pre = zarr.open(f"{RUN_DIR}/im_te_pre.zarr")[:]
+im_te_post = zarr.open(f"{RUN_DIR}/im_te_post.zarr")[:]
+la_te = zarr.open(f"{RUN_DIR}/la_te.zarr")[:]
 
 
 f = open(f"{RUN_DIR}/metadata.txt", "a")
@@ -144,14 +177,14 @@ f.close()
 
 
 
-# # Begin SNN Code
+# Begin SNN Code
 
 BATCH_SIZE = 128
 PATCH_SIZE = (128,128)
-FILTERS = [4]
+FILTERS = [4, 8, 16]
 DROPOUT = [0.15, 0.4]
 EPOCHS = [70, 100]
-UNITS = [4]
+UNITS = [4, 8, 16, 32]
 LR = [0.01, 0.1, 0.001]
 
 
@@ -161,6 +194,17 @@ def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
     tensor = layers.BatchNormalization(name=f'{name}_normalisation')(tensor)
     tensor = layers.Dropout(rate=dropout, name=f'{name}_dropout')(tensor)
     return tensor 
+
+# def convolution_block(inputs, filters:int, dropout:float, name:str):
+#     tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution1')(inputs)
+#     tensor = layers.Activation('relu', name=f'{name}_activation1')(tensor)
+#     tensor = layers.BatchNormalization(name=f'{name}_normalisation1')(tensor)
+#     tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution2')(tensor)
+#     tensor = layers.Activation('relu', name=f'{name}_activation2')(tensor)
+#     tensor = layers.BatchNormalization(name=f'{name}_normalisation2')(tensor)
+#     tensor = layers.MaxPool2D(pool_size=(2, 2), name=f'{name}_pooling')(tensor)
+#     tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout')(tensor)
+#     return tensor
 
 def convolution_block(inputs, filters:int, dropout:float, name:str, n=1):
     for i in range(n):
@@ -244,6 +288,9 @@ class SiameseGenerator(Sequence):
         self.train = train
 
 
+        
+        # self.tuple_pairs = make_tuple_pair(self.images_t0.shape[0], int(self.batch_size/4))
+        # np.random.shuffle(self.tuple_pairs)
     def __len__(self):
         return len(self.images_pre)//self.batch_size    
     
@@ -262,24 +309,21 @@ gen_tr = SiameseGenerator((im_tr_pre, im_tr_post), la_tr, batch_size=BATCH_SIZE)
 gen_va = SiameseGenerator((im_va_pre, im_va_post), la_va, batch_size=BATCH_SIZE)
 
 
-# # print(im_tr_pre.shape[i])
+# print(im_tr_pre.shape[i])
 
-indices = np.random.randint(0, im_tr_pre.shape[0]//BATCH_SIZE, 5)
-print(indices)
+indices = np.random.randint(0, im_tr_pre.shape[0]//32, 5)
 
 for j, ind in enumerate(indices):
     fig, ax = plt.subplots(2,8,dpi=400, figsize=(25,6))
     ax = ax.flatten()
     for i, image in enumerate(gen_tr.__getitem__(ind)[0]['images_t0'][0:8]):
-        # print(image.astype(int))
-        print(image.shape)
-        ax[i].imshow(image.astype(int))
+        ax[i].imshow(image)
         ax[i].set_title(gen_tr.__getitem__(ind)[1][i] == 1)
     for i, image in enumerate(gen_tr.__getitem__(ind)[0]['images_tt'][0:8]):
-        ax[i+8].imshow(image.astype(int))
+        ax[i+8].imshow(image)
     plt.suptitle("Training set (sample images; top=pre, bottom=post)")
     plt.tight_layout()
-    plt.savefig(f"{RUN_DIR}/training_data_samples_{j+1}.png")
+    plt.savefig(f"{RUN_DIR}/traing_data_samples_{j+1}.png")
 
 
 
@@ -407,17 +451,17 @@ f.close()
 #display plot
 plt.savefig(f"{RUN_DIR}/pr_curve.png")
 
-# delete_zarr_if_exists(f"{RUN_DIR}/im_tr_pre.zarr")
-# delete_zarr_if_exists(f"{RUN_DIR}/im_tr_post.zarr")
-# delete_zarr_if_exists(f"{RUN_DIR}/la_tr.zarr")
+delete_zarr_if_exists(f"{RUN_DIR}/im_tr_pre.zarr")
+delete_zarr_if_exists(f"{RUN_DIR}/im_tr_post.zarr")
+delete_zarr_if_exists(f"{RUN_DIR}/la_tr.zarr")
 
-# delete_zarr_if_exists(f"{RUN_DIR}/im_va_pre.zarr")
-# delete_zarr_if_exists(f"{RUN_DIR}/im_va_post.zarr")
-# delete_zarr_if_exists(f"{RUN_DIR}/la_va.zarr")
+delete_zarr_if_exists(f"{RUN_DIR}/im_va_pre.zarr")
+delete_zarr_if_exists(f"{RUN_DIR}/im_va_post.zarr")
+delete_zarr_if_exists(f"{RUN_DIR}/la_va.zarr")
 
-# delete_zarr_if_exists(f"{RUN_DIR}/im_te_pre.zarr")
-# delete_zarr_if_exists(f"{RUN_DIR}/im_te_post.zarr")
-# delete_zarr_if_exists(f"{RUN_DIR}/la_te.zarr")
+delete_zarr_if_exists(f"{RUN_DIR}/im_te_pre.zarr")
+delete_zarr_if_exists(f"{RUN_DIR}/im_te_post.zarr")
+delete_zarr_if_exists(f"{RUN_DIR}/la_te.zarr")
 
 
 
