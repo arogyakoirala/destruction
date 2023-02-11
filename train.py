@@ -113,7 +113,7 @@ for city in CITIES:
     la_te = read_zarr(city, "la_te", DATA_DIR)
 
 
-    steps = make_tuple_pair(im_tr_pre.shape[0], 5000)
+    steps = make_tuple_pair(im_tr_pre.shape[0], 100000)
     
     for i, st in enumerate(steps):
         _im_tr_pre = im_tr_pre[st[0]:st[1]]
