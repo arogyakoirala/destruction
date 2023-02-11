@@ -140,7 +140,7 @@ for city in CITIES:
         del _im_va_pre, _im_va_post, _la_va
         print(f"{city} - VA: Copied {i+1} out of {len(steps)} blocks..")
 
-    steps = make_tuple_pair(im_va_pre.shape[0], 50000) 
+    steps = make_tuple_pair(im_te_pre.shape[0], 50000) 
     for i, st in enumerate(steps):
         _im_te_pre = im_te_pre[st[0]:st[1]]
         _im_te_post = im_te_post[st[0]:st[1]]
