@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 # SUFFIX = 'im'
 CITY = 'aleppo'
 DATA_DIR = "../data"
-BLOCK_SIZE = 100
+BLOCK_SIZE = 5000
 
 import argparse
 parser = argparse.ArgumentParser()

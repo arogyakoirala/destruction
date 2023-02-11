@@ -18,15 +18,15 @@ echo "Data Dir: $data_dir";
 
 for city in "${Cities[@]}"; do
     echo "Sampling:" $city
-    python sample.py --city $city --data_dir $data_dir
+    python -u sample.py --city $city --data_dir $data_dir
     echo "Labeling:" $city
-    python label.py --city $city --data_dir $data_dir
+    python -u label.py --city $city --data_dir $data_dir
     echo "Tiling:" $city
-    python tile.py --city $city --data_dir $data_dir
+    python -u tile.py --city $city --data_dir $data_dir
     echo "Balancing:" $city
-    python balance.py --city $city --data_dir $data_dir
+    python -u balance.py --city $city --data_dir $data_dir
     echo "Shuffling:" $city
-    python shuffle.py --city $city --data_dir $data_dir
+    python -u shuffle.py --city $city --data_dir $data_dir
     echo "Shuffling again:" $city
-    python shuffle.py --city $city --data_dir $data_dir
+    python -u shuffle.py --city $city --data_dir $data_dir
 done
