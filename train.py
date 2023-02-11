@@ -113,8 +113,7 @@ for city in CITIES:
     la_te = read_zarr(city, "la_te", DATA_DIR)
 
 
-    steps = make_tuple_pair(im_tr_pre.shape[0], 100000)
-    
+    steps = make_tuple_pair(im_tr_pre.shape[0], 100000) 
     for i, st in enumerate(steps):
         _im_tr_pre = im_tr_pre[st[0]:st[1]]
         _im_tr_post = im_tr_post[st[0]:st[1]]
@@ -123,7 +122,10 @@ for city in CITIES:
         save_zarr(_im_tr_pre, f"{RUN_DIR}/im_tr_pre.zarr")
         save_zarr(_im_tr_post, f"{RUN_DIR}/im_tr_post.zarr")
         save_zarr(_la_tr, f"{RUN_DIR}/la_tr.zarr")
+        print(f"{city} - TR: Copied {i+1} out of {len(steps)} blocks..")
 
+    steps = make_tuple_pair(im_va_pre.shape[0], 50000) 
+    for i, st in enumerate(steps):
         _im_va_pre = im_va_pre[st[0]:st[1]]
         _im_va_post = im_va_post[st[0]:st[1]]
         _la_va = la_va[st[0]:st[1]]
@@ -131,7 +133,10 @@ for city in CITIES:
         save_zarr(_im_va_pre, f"{RUN_DIR}/im_va_pre.zarr")
         save_zarr(_im_va_post, f"{RUN_DIR}/im_va_post.zarr")
         save_zarr(_la_va, f"{RUN_DIR}/la_va.zarr")
+        print(f"{city} - VA: Copied {i+1} out of {len(steps)} blocks..")
 
+    steps = make_tuple_pair(im_va_pre.shape[0], 50000) 
+    for i, st in enumerate(steps):
         _im_te_pre = im_te_pre[st[0]:st[1]]
         _im_te_post = im_te_post[st[0]:st[1]]
         _la_te = la_te[st[0]:st[1]]
@@ -140,7 +145,7 @@ for city in CITIES:
         save_zarr(_im_te_post, f"{RUN_DIR}/im_te_post.zarr")
         save_zarr(_la_te, f"{RUN_DIR}/la_te.zarr")
 
-        print(f"Copied {i+1} out of {len(steps)} blocks..")
+        print(f"{city} - TE: Copied {i+1} out of {len(steps)} blocks..")
 
 
 
