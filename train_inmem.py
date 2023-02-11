@@ -264,19 +264,22 @@ gen_va = SiameseGenerator((im_va_pre, im_va_post), la_va, batch_size=BATCH_SIZE)
 
 # # print(im_tr_pre.shape[i])
 
-indices = np.random.randint(0, im_tr_pre.shape[0]//32, 5)
+indices = np.random.randint(0, im_tr_pre.shape[0]//BATCH_SIZE, 5)
+print(indices)
 
 for j, ind in enumerate(indices):
     fig, ax = plt.subplots(2,8,dpi=400, figsize=(25,6))
     ax = ax.flatten()
     for i, image in enumerate(gen_tr.__getitem__(ind)[0]['images_t0'][0:8]):
-        ax[i].imshow(image)
+        # print(image.astype(int))
+        print(image.shape)
+        ax[i].imshow(image.astype(int))
         ax[i].set_title(gen_tr.__getitem__(ind)[1][i] == 1)
     for i, image in enumerate(gen_tr.__getitem__(ind)[0]['images_tt'][0:8]):
-        ax[i+8].imshow(image)
+        ax[i+8].imshow(image.astype(int))
     plt.suptitle("Training set (sample images; top=pre, bottom=post)")
     plt.tight_layout()
-    plt.savefig(f"{RUN_DIR}/traing_data_samples_{j+1}.png")
+    plt.savefig(f"{RUN_DIR}/training_data_samples_{j+1}.png")
 
 
 
