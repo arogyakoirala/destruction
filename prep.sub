@@ -1,5 +1,5 @@
 universe = vanilla
-executable              = run.sh
+executable              = prep.sh
 arguments               = /lustre/ific.uv.es/ml/iae091/data
 log                     = condor_logs/logfile.$(Cluster).$(Process).log
 output                  = condor_logs/outfile.$(Cluster).$(Process).out
