@@ -181,10 +181,10 @@ f.close()
 
 BATCH_SIZE = 128
 PATCH_SIZE = (128,128)
-FILTERS = [4, 8, 16]
-DROPOUT = [0.15, 0.4]
+FILTERS = [16, 24, 32]
+DROPOUT = [0.35, 0.4]
 EPOCHS = [70, 100]
-UNITS = [4, 8, 16, 32]
+UNITS = [16, 32, 64]
 LR = [0.01, 0.1, 0.001]
 
 
