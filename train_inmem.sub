@@ -1,4 +1,5 @@
 universe = vanilla
+
 executable              = train_inmem.sh
 arguments               = 
 log                     = condor_logs/logfile.$(Cluster).$(Process).log
@@ -8,6 +9,8 @@ error                   = condor_logs/errors.$(Cluster).$(Process).err
 # Needed to read .bashrc and conda environment
 getenv = True
 
-# TestJob CPU
-# +testJob = True
+
+request_gpus = 2
++UseNvidiaA100 = True
+
 queue
