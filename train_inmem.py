@@ -155,18 +155,30 @@ for city in CITIES:
 
 
 
+def shuffle_inmem(pre, post, labels):
+    shuffled = np.arange(0, pre.shape[0])
+    np.random.shuffle(shuffled) 
+    return pre[shuffled], post[shuffled], labels[shuffled]
+
+
 im_tr_pre = zarr.open(f"{RUN_DIR}/im_tr_pre.zarr")[:]
 im_tr_post = zarr.open(f"{RUN_DIR}/im_tr_post.zarr")[:]
 la_tr= zarr.open(f"{RUN_DIR}/la_tr.zarr")[:]
+
+im_tr_pre, im_tr_post, la_tr = shuffle_inmem(im_tr_pre, im_tr_post, la_tr)
+
 
 im_va_pre = zarr.open(f"{RUN_DIR}/im_va_pre.zarr")[:]
 im_va_post = zarr.open(f"{RUN_DIR}/im_va_post.zarr")[:]
 la_va = zarr.open(f"{RUN_DIR}/la_va.zarr")[:]
 
+im_va_pre, im_va_post, la_va = shuffle_inmem(im_va_pre, im_va_post, la_va)
+
 im_te_pre = zarr.open(f"{RUN_DIR}/im_te_pre.zarr")[:]
 im_te_post = zarr.open(f"{RUN_DIR}/im_te_post.zarr")[:]
 la_te = zarr.open(f"{RUN_DIR}/la_te.zarr")[:]
 
+im_te_pre, im_te_post, la_te = shuffle_inmem(im_te_pre, im_te_post, la_te)
 
 f = open(f"{RUN_DIR}/metadata.txt", "a")
 f.write(f"\n\n######## Run {run_id}: {CITIES} \n\n")
