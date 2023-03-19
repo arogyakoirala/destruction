@@ -14,8 +14,8 @@ import time
 import shutil
 
 
-CITIES = ['aleppo', 'raqqa']
-DATA_DIR = "../data"
+CITIES = ['aleppo', 'daraa']
+DATA_DIR = "../data/destr_data"
 OUTPUT_DIR = "../outputs"
 MODEL = "double"
 
@@ -398,7 +398,7 @@ if MODEL == 'triple':
     )
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
-model.compile(optimizer=optimizer, loss='binary_focal_crossentropy', metrics=['accuracy',metrics.AUC(num_thresholds=200, curve='ROC', name='auc')])
+model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy',metrics.AUC(num_thresholds=200, curve='ROC', name='auc')])
 model.summary()
 
 history = None

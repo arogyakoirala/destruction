@@ -4,7 +4,7 @@ import os
 import math
 import numpy as np
 from tensorflow.keras import backend, layers, models, callbacks, metrics
-from tensorflow.keras.utils import Sequence
+from tensorflow.keras.utils import Sequence, plot_model
 import random
 import tensorflow as tf
 from keras.models import load_model
@@ -14,8 +14,8 @@ import time
 import shutil
 
 
-CITIES = ['aleppo', 'raqqa']
-DATA_DIR = "../data"
+CITIES = ['aleppo', 'daraa']
+DATA_DIR = "../data/destr_data"
 OUTPUT_DIR = "../outputs"
 MODEL = "double"
 
@@ -276,7 +276,7 @@ def double_convolutional_network(shape:tuple, args_encode:dict, args_dense:dict)
     # Output layer
     outputs = layers.Dense(units=1, activation='sigmoid', name='outputs')(dense)
     # Model
-    model   = models.Model(inputs=[images1, images2], outputs=outputs, name='siamese_convolutional_network')
+    model   = models.Model(inputs=[images1, images2], outputs=outputs, name='double_convolutional_network')
     return model
 
 class SiameseGenerator(Sequence):
@@ -386,6 +386,20 @@ if MODEL == 'triple':
     )
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
+
+tf.keras.utils.plot_model(
+    model,
+    to_file=f'{MODEL_DIR}/model.png',
+    show_shapes=False,
+    show_dtype=False,
+    show_layer_names=True,
+    rankdir='TB',
+    expand_nested=False,
+    dpi=96,
+    layer_range=None,
+    show_layer_activations=False
+)
+
 model.compile(optimizer=optimizer, loss='binary_focal_crossentropy', metrics=['accuracy',metrics.AUC(num_thresholds=200, curve='ROC', name='auc')])
 model.summary()
 

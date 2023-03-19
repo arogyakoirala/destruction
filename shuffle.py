@@ -104,14 +104,19 @@ la_tr = read_zarr(CITY, "la_tr", DATA_DIR)
 index = random.randint(0,tr_pre.shape[0] - 10)
 
 
-fig, ax = plt.subplots(2,5,dpi=200, figsize=(25,10))
-ax = ax.flatten()
-for i, image in enumerate(tr_pre[index:index+5]):
-    ax[i].imshow(image)
-for i, image in enumerate(tr_post[index:index+5]):
-    ax[i+5].imshow(image)
-plt.suptitle("Training set shuffled (sample images; top=pre, bottom=post)")
-plt.savefig(f"{DATA_DIR}/{CITY}/others/tr_samples_sfl.png")
+def save_img(random_index, label):
+    fig, ax = plt.subplots(2,5,dpi=200, figsize=(25,10))
+    ax = ax.flatten()
+    for i, image in enumerate(tr_pre[index:index+5]):
+        ax[i].imshow(image)
+    for i, image in enumerate(tr_post[index:index+5]):
+        ax[i+5].imshow(image)
+    plt.suptitle("Training set shuffled (sample images; top=pre, bottom=post)")
+    plt.savefig(f"{DATA_DIR}/{CITY}/others/{label}")
+
+save_img(random.randint(0,tr_pre.shape[0] - 10), "tr_samples_shuffled_ex1.png")
+save_img(random.randint(0,tr_pre.shape[0] - 10), "tr_samples_shuffled_ex2.png")
+save_img(random.randint(0,tr_pre.shape[0] - 10), "tr_samples_shuffled_ex3.png")
 
 print("Sanity Check 2: Testing")
 te_pre = read_zarr(CITY, "im_te_pre", DATA_DIR)
