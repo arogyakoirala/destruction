@@ -193,10 +193,10 @@ f.close()
 
 BATCH_SIZE = 16
 PATCH_SIZE = (128,128)
-FILTERS = [16, 24, 32]
+FILTERS = [8, 16]
 DROPOUT = [0.35, 0.4]
 EPOCHS = [70, 100]
-UNITS = [16, 32, 64]
+UNITS = [8,16]
 LR = [0.01, 0.1, 0.001]
 
 
@@ -235,14 +235,14 @@ def distance_layer(inputs):
 
 
 
-def encoder_block_separated(inputs, filters:int=1, dropout=0, n_convs=1, n_blocks=5, name:str=''):
+def encoder_block_separated(inputs, filters:int=1, dropout=0, n_convs=1, n_blocks=3, name:str=''):
     for i in range(n_blocks):
         tensor  = convolution_block(inputs, filters=filters*(i+1), dropout=dropout, n=n_convs, name=f'{name}_block{i+1}')
 
     outputs = layers.Flatten(name=f'{name}_flatten')(tensor)
     return outputs
 
-def encoder_block_shared(shape:tuple, filters:int=1, n_convs=1, n_blocks=5, dropout=0):
+def encoder_block_shared(shape:tuple, filters:int=1, n_convs=1, n_blocks=3, dropout=0):
     inputs  = layers.Input(shape=shape, name='inputs'),
     for i in range(n_blocks):
         tensor  = convolution_block(inputs, filters=filters*(i+1), dropout=dropout, n=n_convs, name=f'block{i+1}')
@@ -366,7 +366,7 @@ args  = dict(filters=filters, dropout=dropout, units=units) # ! Check parameters
 
 
 args_dense  = dict(units=units, dropout=dropout)
-parameters = f'filters={filters}, \ndropout={np.round(dropout, 4)}, \nepochs={epochs}, \nunits={units}, \nlearning_rate={lr}'
+parameters = f'batch_size={BATCH_SIZE} filters={filters}, \ndropout={np.round(dropout, 4)}, \nepochs={epochs}, \nunits={units}, \nlearning_rate={lr}'
 print(parameters)
 f = open(f"{RUN_DIR}/metadata.txt", "a")
 f.write(f"\n######## Run parameters \n\n{parameters}")
