@@ -191,7 +191,7 @@ f.close()
 
 # Begin SNN Code
 
-BATCH_SIZE = 128
+BATCH_SIZE = 16
 PATCH_SIZE = (128,128)
 FILTERS = [16, 24, 32]
 DROPOUT = [0.35, 0.4]
@@ -373,7 +373,7 @@ f.write(f"\n######## Run parameters \n\n{parameters}")
 f.close()
 
 if MODEL == 'snn':
-    args_encode = dict(filters=filters, dropout=dropout, n_blocks=5, n_convs=2)
+    args_encode = dict(filters=filters, dropout=dropout, n_blocks=2, n_convs=2)
     model = siamese_convolutional_network(
         shape=(*PATCH_SIZE, 3),  
         args_encode = args_encode,
@@ -381,7 +381,7 @@ if MODEL == 'snn':
     )
 
 if MODEL == 'double':
-    args_encode = dict(filters=filters, dropout=dropout, n_blocks=5, n_convs=2)
+    args_encode = dict(filters=filters, dropout=dropout, n_blocks=2, n_convs=2)
     
     model = double_convolutional_network(
         shape=(*PATCH_SIZE, 3),  
@@ -390,14 +390,14 @@ if MODEL == 'double':
     )
 
 if MODEL == 'triple':
-    args_encode = dict(filters=filters, dropout=dropout,  n_blocks=5, n_convs=3)
+    args_encode = dict(filters=filters, dropout=dropout,  n_blocks=2, n_convs=3)
     model = double_convolutional_network(
         shape=(*PATCH_SIZE, 3),  
         args_encode = args_encode,
         args_dense = args_dense,
     )
 
-optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
+optimizer = tf.keras.optimizers.legacy.Adam(learning_rate=lr)
 model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy',metrics.AUC(num_thresholds=200, curve='ROC', name='auc')])
 model.summary()
 

@@ -16,8 +16,8 @@ import shutil
 
 CITIES = ['aleppo', 'daraa']
 DATA_DIR = "../data/destr_data"
-OUTPUT_DIR = "../outputs"
-MODEL = "double"
+OUTPUT_DIR = "../data/destr_outputs"
+MODEL = "siamese"
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -179,12 +179,12 @@ f.close()
 
 # Begin SNN Code
 
-BATCH_SIZE = 128
+BATCH_SIZE = 16
 PATCH_SIZE = (128,128)
-FILTERS = [4]
+FILTERS = [8]
 DROPOUT = [0.15, 0.4]
 EPOCHS = [70, 100]
-UNITS = [4]
+UNITS = [8]
 LR = [0.01, 0.1, 0.001]
 
 
@@ -223,14 +223,14 @@ def distance_layer(inputs):
 
 
 
-def encoder_block_separated(inputs, filters:int=1, dropout=0, n_convs=1, n_blocks=5, name:str=''):
+def encoder_block_separated(inputs, filters:int=1, dropout=0, n_convs=1, n_blocks=2, name:str=''):
     for i in range(n_blocks):
         tensor  = convolution_block(inputs, filters=filters*(i+1), dropout=dropout, n=n_convs, name=f'{name}_block{i+1}')
 
     outputs = layers.Flatten(name=f'{name}_flatten')(tensor)
     return outputs
 
-def encoder_block_shared(shape:tuple, filters:int=1, n_convs=1, n_blocks=5, dropout=0):
+def encoder_block_shared(shape:tuple, filters:int=1, n_convs=1, n_blocks=2, dropout=0):
     inputs  = layers.Input(shape=shape, name='inputs'),
     for i in range(n_blocks):
         tensor  = convolution_block(inputs, filters=filters*(i+1), dropout=dropout, n=n_convs, name=f'block{i+1}')
@@ -338,6 +338,7 @@ for j, ind in enumerate(indices):
 
 print("+++++++++", gen_tr.__len__())
 MODEL_STORAGE_LOCATION = f"{RUN_DIR}/model"
+Path(MODEL_STORAGE_LOCATION).mkdir(parents=True)
 training_callbacks = [
     callbacks.EarlyStopping(monitor='val_auc', patience=5, restore_best_weights=True),
     callbacks.ModelCheckpoint(f'{MODEL_STORAGE_LOCATION}', monitor='val_auc', verbose=0, save_best_only=True, save_weights_only=False, mode='max')
@@ -385,22 +386,22 @@ if MODEL == 'triple':
         args_dense = args_dense,
     )
 
-optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
+optimizer = tf.keras.optimizers.legacy.Adam(learning_rate=lr)
 
-tf.keras.utils.plot_model(
-    model,
-    to_file=f'{MODEL_DIR}/model.png',
-    show_shapes=False,
-    show_dtype=False,
-    show_layer_names=True,
-    rankdir='TB',
-    expand_nested=False,
-    dpi=96,
-    layer_range=None,
-    show_layer_activations=False
-)
+# tf.keras.utils.plot_model(
+#     model,
+#     to_file=f'{RUN_DIR}/model.png',
+#     show_shapes=False,
+#     show_dtype=False,
+#     show_layer_names=True,
+#     rankdir='TB',
+#     expand_nested=False,
+#     dpi=96,
+#     layer_range=None,
+#     show_layer_activations=False
+# )
 
-model.compile(optimizer=optimizer, loss='binary_focal_crossentropy', metrics=['accuracy',metrics.AUC(num_thresholds=200, curve='ROC', name='auc')])
+model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy',metrics.AUC(num_thresholds=200, curve='ROC', name='auc')])
 model.summary()
 
 history = None
