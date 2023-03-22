@@ -193,11 +193,11 @@ f.close()
 
 BATCH_SIZE = 16
 PATCH_SIZE = (128,128)
-FILTERS = [8, 16]
-DROPOUT = [0.35, 0.4]
+FILTERS = [8]
+DROPOUT = [0.1]
 EPOCHS = [70, 100]
-UNITS = [8,16]
-LR = [0.01, 0.1, 0.001]
+UNITS = [86]
+LR = [0.1]
 
 
 def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
@@ -288,7 +288,7 @@ def double_convolutional_network(shape:tuple, args_encode:dict, args_dense:dict)
     # Output layer
     outputs = layers.Dense(units=1, activation='sigmoid', name='outputs')(dense)
     # Model
-    model   = models.Model(inputs=[images1, images2], outputs=outputs, name='siamese_convolutional_network')
+    model   = models.Model(inputs=[images1, images2], outputs=outputs, name='double_convolutional_network')
     return model
 
 class SiameseGenerator(Sequence):
@@ -381,7 +381,7 @@ if MODEL == 'snn':
     )
 
 if MODEL == 'double':
-    args_encode = dict(filters=filters, dropout=dropout, n_blocks=2, n_convs=2)
+    args_encode = dict(filters=filters, dropout=dropout, n_blocks=2, n_convs=1)
     
     model = double_convolutional_network(
         shape=(*PATCH_SIZE, 3),  
