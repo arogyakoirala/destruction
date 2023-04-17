@@ -18,12 +18,14 @@ SUFFIX = "im"
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--city", help="City")
+parser.add_argument("--data_dir", help="Data Dir")
 args = parser.parse_args()
 
 if args.city:
     CITY = args.city
 
-
+if args.data_dir:
+    DATA_DIR = args.data_dir
 
 def search_data(pattern:str='.*', directory:str='../data') -> list:
     '''Sorted list of files in a directory matching a regular expression'''
@@ -177,9 +179,9 @@ for j, pre_image in enumerate(pre_images):
         _, label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
 
 
+        # pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
         # image_tr, image_va, image_te = sample_split(image, samples_min_unc) # for smaller samples there is no noanalysis class
         # label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
-        # pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
 
         # image_tr = image_tr.reshape(*image_tr.shape)
         # print(pre_image_tr.shape)
@@ -231,6 +233,8 @@ for i, image in enumerate(tr_pre[index:index+5]):
     ax[i].imshow(image)
 for i, image in enumerate(tr_post[index:index+5]):
     ax[i+5].imshow(image)
+for i, label in enumerate(la_tr[index:index+5]):
+    ax[i].set_title(label==1)
 plt.suptitle("Training set (sample images; top=pre, bottom=post)")
 plt.savefig(f"{DATA_DIR}/{CITY}/others/tr_samples.png")
 

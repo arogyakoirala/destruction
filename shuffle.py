@@ -12,15 +12,19 @@ import matplotlib.pyplot as plt
 # SUFFIX = 'im'
 CITY = 'aleppo'
 DATA_DIR = "../data"
-BLOCK_SIZE = 100
+BLOCK_SIZE = 5000
 
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--city", help="City")
+parser.add_argument("--data_dir", help="Data Dir")
 args = parser.parse_args()
 
 if args.city:
     CITY = args.city
+
+if args.data_dir:
+    DATA_DIR = args.data_dir
 
 def read_zarr(city, suffix, path="../data"):
     path = f'{path}/{city}/others/{city}_{suffix}.zarr'
@@ -100,14 +104,21 @@ la_tr = read_zarr(CITY, "la_tr", DATA_DIR)
 index = random.randint(0,tr_pre.shape[0] - 10)
 
 
-fig, ax = plt.subplots(2,5,dpi=200, figsize=(25,10))
-ax = ax.flatten()
-for i, image in enumerate(tr_pre[index:index+5]):
-    ax[i].imshow(image)
-for i, image in enumerate(tr_post[index:index+5]):
-    ax[i+5].imshow(image)
-plt.suptitle("Training set shuffled (sample images; top=pre, bottom=post)")
-plt.savefig(f"{DATA_DIR}/{CITY}/others/tr_samples_sfl.png")
+def save_img(random_index, label):
+    fig, ax = plt.subplots(2,5,dpi=200, figsize=(25,10))
+    ax = ax.flatten()
+    for i, image in enumerate(tr_pre[random_index:random_index+5]):
+        ax[i].imshow(image)
+    for i, image in enumerate(tr_post[random_index:random_index+5]):
+        ax[i+5].imshow(image)
+    for i, label in enumerate(la_tr[random_index:random_index+5]):
+        ax[i].set_title(label==1)
+    plt.suptitle("Training set shuffled (sample images; top=pre, bottom=post)")
+    plt.savefig(f"{DATA_DIR}/{CITY}/others/{label}")
+
+save_img(random.randint(0,tr_pre.shape[0] - 10), "tr_samples_shuffled_ex1.png")
+save_img(random.randint(0,tr_pre.shape[0] - 10), "tr_samples_shuffled_ex2.png")
+save_img(random.randint(0,tr_pre.shape[0] - 10), "tr_samples_shuffled_ex3.png")
 
 print("Sanity Check 2: Testing")
 te_pre = read_zarr(CITY, "im_te_pre", DATA_DIR)

@@ -1,6 +1,7 @@
 universe = vanilla
-executable              = run.sh
-arguments               = 
+
+executable              = train_inmem.sh
+arguments               = aleppo,daraa,idlib,raqqa,deir-ez-zor,hama,homs,damascus
 log                     = condor_logs/logfile.$(Cluster).$(Process).log
 output                  = condor_logs/outfile.$(Cluster).$(Process).out
 error                   = condor_logs/errors.$(Cluster).$(Process).err
@@ -8,6 +9,8 @@ error                   = condor_logs/errors.$(Cluster).$(Process).err
 # Needed to read .bashrc and conda environment
 getenv = True
 
-# TestJob CPU
-+testJob = True
+
+request_gpus = 2
++UseNvidiaA100 = True
+
 queue

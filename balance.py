@@ -24,10 +24,14 @@ def save_zarr(data, city, suffix, path="../data"):
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--city", help="City")
+parser.add_argument("--data_dir", help="Data dir")
 args = parser.parse_args()
 
 if args.city:
     CITY = args.city
+
+if args.data_dir:
+    DATA_DIR = args.data_dir
 
 images_pre = read_zarr(CITY, 'im_tr_pre', DATA_DIR)
 images_post = read_zarr(CITY, 'im_tr_post', DATA_DIR)

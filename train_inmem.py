@@ -81,7 +81,7 @@ runs = [f for f in runs if ".DS_Store" not in f]
 run_id = len(runs)+1
 
 print(f"\n\n### Run ID: {run_id} (use this code for dense_predict.py) \n\n")
-time.sleep(1.5)
+time.sleep(5)
 
 
 RUN_DIR = OUTPUT_DIR + f"/{run_id}"
@@ -172,25 +172,25 @@ def shuffle_inmem(pre, post, labels):
     return pre[shuffled], post[shuffled], labels[shuffled]
 
 
-im_tr_pre = zarr.open(f"{RUN_DIR}/im_tr_pre.zarr")[:600]
-im_tr_post = zarr.open(f"{RUN_DIR}/im_tr_post.zarr")[:600]
-la_tr= zarr.open(f"{RUN_DIR}/la_tr.zarr")[:600]
+im_tr_pre = zarr.open(f"{RUN_DIR}/im_tr_pre.zarr")[:]
+im_tr_post = zarr.open(f"{RUN_DIR}/im_tr_post.zarr")[:]
+la_tr= zarr.open(f"{RUN_DIR}/la_tr.zarr")[:]
 
 im_tr_pre, im_tr_post, la_tr = shuffle_inmem(im_tr_pre, im_tr_post, la_tr)
 
 save_img( im_tr_pre, im_tr_post, la_tr, "tr_inmem_sfl_ex.png",)
 
 
-im_va_pre = zarr.open(f"{RUN_DIR}/im_va_pre.zarr")[:600]
-im_va_post = zarr.open(f"{RUN_DIR}/im_va_post.zarr")[:600]
-la_va = zarr.open(f"{RUN_DIR}/la_va.zarr")[:600]
+im_va_pre = zarr.open(f"{RUN_DIR}/im_va_pre.zarr")[:]
+im_va_post = zarr.open(f"{RUN_DIR}/im_va_post.zarr")[:]
+la_va = zarr.open(f"{RUN_DIR}/la_va.zarr")[:]
 
 im_va_pre, im_va_post, la_va = shuffle_inmem(im_va_pre, im_va_post, la_va)
 save_img( im_va_pre, im_va_post, la_va,"va_inmem_sfl_ex.png")
 
-im_te_pre = zarr.open(f"{RUN_DIR}/im_te_pre.zarr")[:600]
-im_te_post = zarr.open(f"{RUN_DIR}/im_te_post.zarr")[:600]
-la_te = zarr.open(f"{RUN_DIR}/la_te.zarr")[:600]
+im_te_pre = zarr.open(f"{RUN_DIR}/im_te_pre.zarr")[:]
+im_te_post = zarr.open(f"{RUN_DIR}/im_te_post.zarr")[:]
+la_te = zarr.open(f"{RUN_DIR}/la_te.zarr")[:]
 
 im_te_pre, im_te_post, la_te = shuffle_inmem(im_te_pre, im_te_post, la_te)
 save_img(im_te_pre, im_te_post, la_te, "te_inmem_sfl_ex.png")
@@ -206,13 +206,13 @@ f.close()
 
 # Begin SNN Code
 
-BATCH_SIZE = 16
+BATCH_SIZE = 32
 PATCH_SIZE = (128,128)
-FILTERS = [32]
+FILTERS = [16]
 DROPOUT = [0.1, 0.2]
 EPOCHS = [70, 100]
 UNITS = [64, 128]
-LR = [0.01]
+LR = [0.1]
 
 
 def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
@@ -237,7 +237,7 @@ def convolution_block(inputs, filters:int, dropout:float, name:str, n=1):
     for i in range(n):
         tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', activation='relu', name=f'{name}_convolution{i+1}')(inputs)
         # tensor = layers.Activation('relu', name=f'{name}_activation{i+1}')(tensor)
-        # tensor = layers.BatchNormalization(name=f'{name}_normalisation{i+1}')(tensor)
+        tensor = layers.BatchNormalization(name=f'{name}_normalisation{i+1}')(tensor)
         tensor = layers.MaxPooling2D(pool_size=(2, 2), name=f'{name}_pooling')(tensor)
         tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout')(tensor)
     return tensor
@@ -291,13 +291,14 @@ def siamese_convolutional_network(shape:tuple, args_encode:dict, args_dense:dict
 
 def difference_network(shape:tuple, args_encode:dict, args_dense:dict):
     images1 = layers.Input(shape=shape, name='images_t0')
+    images2 = layers.Input(shape=shape, name='images_tt')
 
     # Hidden convolutional layers (shared parameters)
     # tensor          = layers.Subtract(name="subtract")([images1, images2])
     
     encoder_block = encoder_block_shared(shape=shape, **args_encode)
     # encode1 = encoder_block(images1)
-    tensor = encoder_block(images1)
+    tensor = encoder_block(images2)
 
     tensor          = dense_block(tensor, **args_dense, name='dense_block1')
     tensor          = dense_block(tensor, **args_dense, name='dense_block2')
@@ -354,44 +355,10 @@ class SiameseGenerator(Sequence):
             return {'images_t0': X_pre, 'images_tt': X_post}
             
 
-class SiameseDiffGenerator(Sequence):
-    def __init__(self, images, labels, batch_size=BATCH_SIZE, train=True):
-    
-        self.images_pre = images[0]
-        self.images_post = images[1]
-        self.labels = labels
-        self.batch_size = batch_size
-        self.train = train
 
+gen_tr = SiameseGenerator((im_tr_pre, im_tr_post), la_tr, batch_size=BATCH_SIZE)
+gen_va = SiameseGenerator((im_va_pre, im_va_post), la_va, batch_size=BATCH_SIZE)
 
-        
-        # self.tuple_pairs = make_tuple_pair(self.images_t0.shape[0], int(self.batch_size/4))
-        # np.random.shuffle(self.tuple_pairs)
-    def __len__(self):
-        return len(self.images_pre)//self.batch_size    
-    
-    def __getitem__(self, index):
-        X_pre = self.images_pre[index*self.batch_size:(index+1)*self.batch_size].astype('float') / 255.0
-        X_post = self.images_post[index*self.batch_size:(index+1)*self.batch_size].astype('float') / 255.0
-        diff = np.subtract(X_pre, X_post)
-        y = self.labels[index*self.batch_size:(index+1)*self.batch_size]
-
-        if self.train:
-            return {'images_t0': diff, 'images_tt': X_post}, y
-        else:
-            return {'images_t0': diff, 'images_tt': X_post}
-
-
-if MODEL== 'diff':
-    gen_tr = SiameseDiffGenerator((im_tr_pre, im_tr_post), la_tr, batch_size=BATCH_SIZE)
-    gen_va = SiameseDiffGenerator((im_va_pre, im_va_post), la_va, batch_size=BATCH_SIZE)
-else:
-    gen_tr = SiameseGenerator((im_tr_pre, im_tr_post), la_tr, batch_size=BATCH_SIZE)
-    gen_va = SiameseGenerator((im_va_pre, im_va_post), la_va, batch_size=BATCH_SIZE)
-
-
-print(gen_tr.__getitem__(0)[0]['images_t0'][1])
-print(gen_tr.__getitem__(0)[0]['images_tt'][1])
 
 
 # print(im_tr_pre.shape[i])

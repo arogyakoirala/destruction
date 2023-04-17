@@ -4,7 +4,7 @@ import os
 import math
 import numpy as np
 from tensorflow.keras import backend, layers, models, callbacks, metrics
-from tensorflow.keras.utils import Sequence
+from tensorflow.keras.utils import Sequence, plot_model
 import random
 import tensorflow as tf
 from keras.models import load_model
@@ -14,15 +14,18 @@ import time
 import shutil
 
 
-CITIES = ['aleppo', 'raqqa']
-DATA_DIR = "../data"
-OUTPUT_DIR = "../outputs"
+CITIES = ['aleppo', 'daraa']
+DATA_DIR = "../data/destr_data"
+OUTPUT_DIR = "../data/destr_outputs"
 MODEL = "double"
 
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--cities", help="Cities, comma separated. Eg: aleppo,raqqa,damascus")
 parser.add_argument("--model", help="One of snn, double")
+parser.add_argument("--output_dir", help="Output dir")
+parser.add_argument("--data_dir", help="Path to data dir")
+
 args = parser.parse_args()
 
 if args.cities:
@@ -31,6 +34,12 @@ if args.cities:
 
 if args.model:
     MODEL = args.model
+
+if args.output_dir:
+    OUTPUT_DIR = args.output_dir
+
+if args.data_dir:
+    DATA_DIR = args.data_dir
 
 def read_zarr(city, suffix, path="../data"):
     path = f'{path}/{city}/others/{city}_{suffix}.zarr'
@@ -103,9 +112,8 @@ for city in CITIES:
     im_te_post = read_zarr(city, "im_te_post", DATA_DIR)
     la_te = read_zarr(city, "la_te", DATA_DIR)
 
-
-    steps = make_tuple_pair(im_tr_pre.shape[0], 5000)
-    
+    print(f"{city}-tr_pre",im_tr_pre)
+    steps = make_tuple_pair(im_tr_pre.shape[0], 100000) 
     for i, st in enumerate(steps):
         _im_tr_pre = im_tr_pre[st[0]:st[1]]
         _im_tr_post = im_tr_post[st[0]:st[1]]
@@ -114,7 +122,13 @@ for city in CITIES:
         save_zarr(_im_tr_pre, f"{RUN_DIR}/im_tr_pre.zarr")
         save_zarr(_im_tr_post, f"{RUN_DIR}/im_tr_post.zarr")
         save_zarr(_la_tr, f"{RUN_DIR}/la_tr.zarr")
+        
+        del _im_tr_pre, _im_tr_post, _la_tr
+        print(f"{city} - TR: Copied {i+1} out of {len(steps)} blocks..")
 
+    print(f"{city}-va_pre",im_va_pre)
+    steps = make_tuple_pair(im_va_pre.shape[0], 50000) 
+    for i, st in enumerate(steps):
         _im_va_pre = im_va_pre[st[0]:st[1]]
         _im_va_post = im_va_post[st[0]:st[1]]
         _la_va = la_va[st[0]:st[1]]
@@ -122,7 +136,13 @@ for city in CITIES:
         save_zarr(_im_va_pre, f"{RUN_DIR}/im_va_pre.zarr")
         save_zarr(_im_va_post, f"{RUN_DIR}/im_va_post.zarr")
         save_zarr(_la_va, f"{RUN_DIR}/la_va.zarr")
+        
+        del _im_va_pre, _im_va_post, _la_va
+        print(f"{city} - VA: Copied {i+1} out of {len(steps)} blocks..")
 
+    print(f"{city}-te_pre",im_te_pre)
+    steps = make_tuple_pair(im_te_pre.shape[0], 50000) 
+    for i, st in enumerate(steps):
         _im_te_pre = im_te_pre[st[0]:st[1]]
         _im_te_post = im_te_post[st[0]:st[1]]
         _la_te = la_te[st[0]:st[1]]
@@ -131,7 +151,8 @@ for city in CITIES:
         save_zarr(_im_te_post, f"{RUN_DIR}/im_te_post.zarr")
         save_zarr(_la_te, f"{RUN_DIR}/la_te.zarr")
 
-        print(f"Copied {i+1} out of {len(steps)} blocks..")
+        del _im_te_pre, _im_te_post, _la_te
+        print(f"{city} - TE: Copied {i+1} out of {len(steps)} blocks..")
 
 
 
@@ -159,13 +180,13 @@ f.close()
 
 # Begin SNN Code
 
-BATCH_SIZE = 128
+BATCH_SIZE = 16
 PATCH_SIZE = (128,128)
 FILTERS = [8]
-DROPOUT = [0.15, 0.2]
+DROPOUT = [0.15, 0.4]
 EPOCHS = [70, 100]
-UNITS = [32]
-LR = [0.01]
+UNITS = [8]
+LR = [0.01, 0.1, 0.001]
 
 
 def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
@@ -203,14 +224,14 @@ def distance_layer(inputs):
 
 
 
-def encoder_block_separated(inputs, filters:int=1, dropout=0, n_convs=1, n_blocks=5, name:str=''):
+def encoder_block_separated(inputs, filters:int=1, dropout=0, n_convs=1, n_blocks=2, name:str=''):
     for i in range(n_blocks):
         tensor  = convolution_block(inputs, filters=filters*(i+1), dropout=dropout, n=n_convs, name=f'{name}_block{i+1}')
 
     outputs = layers.Flatten(name=f'{name}_flatten')(tensor)
     return outputs
 
-def encoder_block_shared(shape:tuple, filters:int=1, n_convs=1, n_blocks=5, dropout=0):
+def encoder_block_shared(shape:tuple, filters:int=1, n_convs=1, n_blocks=2, dropout=0):
     inputs  = layers.Input(shape=shape, name='inputs'),
     for i in range(n_blocks):
         tensor  = convolution_block(inputs, filters=filters*(i+1), dropout=dropout, n=n_convs, name=f'block{i+1}')
@@ -256,11 +277,11 @@ def double_convolutional_network(shape:tuple, args_encode:dict, args_dense:dict)
     # Output layer
     outputs = layers.Dense(units=1, activation='sigmoid', name='outputs')(dense)
     # Model
-    model   = models.Model(inputs=[images1, images2], outputs=outputs, name='siamese_convolutional_network')
+    model   = models.Model(inputs=[images1, images2], outputs=outputs, name='double_convolutional_network')
     return model
 
 class SiameseGenerator(Sequence):
-    def __init__(self, images, labels, batch_size=32, train=True):
+    def __init__(self, images, labels, batch_size=BATCH_SIZE, train=True):
         self.images_pre = images[0]
         self.images_post = images[1]
         self.labels = labels
@@ -318,6 +339,7 @@ for j, ind in enumerate(indices):
 
 print("+++++++++", gen_tr.__len__())
 MODEL_STORAGE_LOCATION = f"{RUN_DIR}/model"
+Path(MODEL_STORAGE_LOCATION).mkdir(parents=True)
 training_callbacks = [
     callbacks.EarlyStopping(monitor='val_auc', patience=5, restore_best_weights=True),
     callbacks.ModelCheckpoint(f'{MODEL_STORAGE_LOCATION}', monitor='val_auc', verbose=0, save_best_only=True, save_weights_only=False, mode='max')
@@ -365,8 +387,22 @@ if MODEL == 'triple':
         args_dense = args_dense,
     )
 
-optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
-model.compile(optimizer=optimizer, loss='binary_focal_crossentropy', metrics=['accuracy',metrics.AUC(num_thresholds=200, curve='ROC', name='auc')])
+optimizer = tf.keras.optimizers.legacy.Adam(learning_rate=lr)
+
+# tf.keras.utils.plot_model(
+#     model,
+#     to_file=f'{RUN_DIR}/model.png',
+#     show_shapes=False,
+#     show_dtype=False,
+#     show_layer_names=True,
+#     rankdir='TB',
+#     expand_nested=False,
+#     dpi=96,
+#     layer_range=None,
+#     show_layer_activations=False
+# )
+
+model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy',metrics.AUC(num_thresholds=200, curve='ROC', name='auc')])
 model.summary()
 
 history = None
