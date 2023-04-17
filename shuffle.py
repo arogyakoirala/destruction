@@ -107,10 +107,12 @@ index = random.randint(0,tr_pre.shape[0] - 10)
 def save_img(random_index, label):
     fig, ax = plt.subplots(2,5,dpi=200, figsize=(25,10))
     ax = ax.flatten()
-    for i, image in enumerate(tr_pre[index:index+5]):
+    for i, image in enumerate(tr_pre[random_index:random_index+5]):
         ax[i].imshow(image)
-    for i, image in enumerate(tr_post[index:index+5]):
+    for i, image in enumerate(tr_post[random_index:random_index+5]):
         ax[i+5].imshow(image)
+    for i, label in enumerate(la_tr[random_index:random_index+5]):
+        ax[i].set_title(label==1)
     plt.suptitle("Training set shuffled (sample images; top=pre, bottom=post)")
     plt.savefig(f"{DATA_DIR}/{CITY}/others/{label}")
 

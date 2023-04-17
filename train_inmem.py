@@ -16,7 +16,7 @@ import shutil
 
 CITIES = ['aleppo', 'daraa']
 DATA_DIR = "../data/destr_data"
-OUTPUT_DIR = "../outputs"
+OUTPUT_DIR = "../data/destr_outputs"
 MODEL = "double"
 
 import argparse
@@ -153,7 +153,18 @@ for city in CITIES:
         del _im_te_pre, _im_te_post, _la_te
         print(f"{city} - TE: Copied {i+1} out of {len(steps)} blocks..")
 
-
+def save_img(pre, post, labels, filename):
+    random_index = random.randint(0,pre.shape[0] - 10)
+    fig, ax = plt.subplots(2,5,dpi=200, figsize=(25,10))
+    ax = ax.flatten()
+    for i, image in enumerate(pre[random_index:random_index+5]):
+        ax[i].imshow(image)
+    for i, image in enumerate(post[random_index:random_index+5]):
+        ax[i+5].imshow(image)
+    for i, label in enumerate(labels[random_index:random_index+5]):
+        ax[i].set_title(label==1)
+    plt.suptitle("Pre-post")
+    plt.savefig(f"{RUN_DIR}/{filename}")
 
 def shuffle_inmem(pre, post, labels):
     shuffled = np.arange(0, pre.shape[0])
@@ -167,18 +178,22 @@ la_tr= zarr.open(f"{RUN_DIR}/la_tr.zarr")[:]
 
 im_tr_pre, im_tr_post, la_tr = shuffle_inmem(im_tr_pre, im_tr_post, la_tr)
 
+save_img( im_tr_pre, im_tr_post, la_tr, "tr_inmem_sfl_ex.png",)
+
 
 im_va_pre = zarr.open(f"{RUN_DIR}/im_va_pre.zarr")[:]
 im_va_post = zarr.open(f"{RUN_DIR}/im_va_post.zarr")[:]
 la_va = zarr.open(f"{RUN_DIR}/la_va.zarr")[:]
 
 im_va_pre, im_va_post, la_va = shuffle_inmem(im_va_pre, im_va_post, la_va)
+save_img( im_va_pre, im_va_post, la_va,"va_inmem_sfl_ex.png")
 
 im_te_pre = zarr.open(f"{RUN_DIR}/im_te_pre.zarr")[:]
 im_te_post = zarr.open(f"{RUN_DIR}/im_te_post.zarr")[:]
 la_te = zarr.open(f"{RUN_DIR}/la_te.zarr")[:]
 
 im_te_pre, im_te_post, la_te = shuffle_inmem(im_te_pre, im_te_post, la_te)
+save_img(im_te_pre, im_te_post, la_te, "te_inmem_sfl_ex.png")
 
 f = open(f"{RUN_DIR}/metadata.txt", "a")
 f.write(f"\n\n######## Run {run_id}: {CITIES} \n\n")
@@ -191,12 +206,12 @@ f.close()
 
 # Begin SNN Code
 
-BATCH_SIZE = 16
+BATCH_SIZE = 32
 PATCH_SIZE = (128,128)
-FILTERS = [8]
-DROPOUT = [0.1]
+FILTERS = [16]
+DROPOUT = [0.1, 0.2]
 EPOCHS = [70, 100]
-UNITS = [86]
+UNITS = [64, 128]
 LR = [0.1]
 
 
@@ -220,11 +235,11 @@ def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
 
 def convolution_block(inputs, filters:int, dropout:float, name:str, n=1):
     for i in range(n):
-        tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution{i+1}')(inputs)
-        tensor = layers.Activation('relu', name=f'{name}_activation{i+1}')(tensor)
+        tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', activation='relu', name=f'{name}_convolution{i+1}')(inputs)
+        # tensor = layers.Activation('relu', name=f'{name}_activation{i+1}')(tensor)
         tensor = layers.BatchNormalization(name=f'{name}_normalisation{i+1}')(tensor)
-    tensor = layers.MaxPool2D(pool_size=(2, 2), name=f'{name}_pooling')(tensor)
-    tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout')(tensor)
+        tensor = layers.MaxPooling2D(pool_size=(2, 2), name=f'{name}_pooling')(tensor)
+        tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout')(tensor)
     return tensor
 
 def distance_layer(inputs):
@@ -237,7 +252,7 @@ def distance_layer(inputs):
 
 def encoder_block_separated(inputs, filters:int=1, dropout=0, n_convs=1, n_blocks=3, name:str=''):
     for i in range(n_blocks):
-        tensor  = convolution_block(inputs, filters=filters*(i+1), dropout=dropout, n=n_convs, name=f'{name}_block{i+1}')
+        tensor  = convolution_block(inputs, filters=(filters*2)//(i+1), dropout=dropout, n=n_convs, name=f'{name}_block{i+1}')
 
     outputs = layers.Flatten(name=f'{name}_flatten')(tensor)
     return outputs
@@ -245,11 +260,13 @@ def encoder_block_separated(inputs, filters:int=1, dropout=0, n_convs=1, n_block
 def encoder_block_shared(shape:tuple, filters:int=1, n_convs=1, n_blocks=3, dropout=0):
     inputs  = layers.Input(shape=shape, name='inputs'),
     for i in range(n_blocks):
-        tensor  = convolution_block(inputs, filters=filters*(i+1), dropout=dropout, n=n_convs, name=f'block{i+1}')
+        tensor  = convolution_block(inputs, filters=(filters*2)//(i+1), dropout=dropout, n=n_convs, name=f'block{i+1}')
     
-    outputs = layers.GlobalAveragePooling2D(name='global_pooling')(tensor)
+    # outputs = layers.GlobalAveragePooling2D(name='global_pooling')(tensor)
     encoder = models.Model(inputs=inputs, outputs=outputs, name='encoder')
     return encoder
+
+
 
 
 def siamese_convolutional_network(shape:tuple, args_encode:dict, args_dense:dict):
@@ -272,6 +289,26 @@ def siamese_convolutional_network(shape:tuple, args_encode:dict, args_dense:dict
     model   = models.Model(inputs=[images1, images2], outputs=outputs, name='siamese_convolutional_network')
     return model
 
+def difference_network(shape:tuple, args_encode:dict, args_dense:dict):
+    images1 = layers.Input(shape=shape, name='images_t0')
+    images2 = layers.Input(shape=shape, name='images_tt')
+
+    # Hidden convolutional layers (shared parameters)
+    # tensor          = layers.Subtract(name="subtract")([images1, images2])
+    
+    encoder_block = encoder_block_shared(shape=shape, **args_encode)
+    # encode1 = encoder_block(images1)
+    tensor = encoder_block(images2)
+
+    tensor          = dense_block(tensor, **args_dense, name='dense_block1')
+    tensor          = dense_block(tensor, **args_dense, name='dense_block2')
+    tensor          = dense_block(tensor, **args_dense, name='dense_block3')
+
+    outputs = layers.Dense(units=1, activation='sigmoid', name='outputs')(tensor)
+    model   = models.Model(inputs=[images1, images2], outputs=outputs, name='diff')
+    return model
+
+
 
 def double_convolutional_network(shape:tuple, args_encode:dict, args_dense:dict):
     # Input layers
@@ -293,6 +330,7 @@ def double_convolutional_network(shape:tuple, args_encode:dict, args_dense:dict)
 
 class SiameseGenerator(Sequence):
     def __init__(self, images, labels, batch_size=BATCH_SIZE, train=True):
+    
         self.images_pre = images[0]
         self.images_post = images[1]
         self.labels = labels
@@ -307,18 +345,20 @@ class SiameseGenerator(Sequence):
         return len(self.images_pre)//self.batch_size    
     
     def __getitem__(self, index):
-        X_pre = self.images_pre[index*self.batch_size:(index+1)*self.batch_size]
-        X_post = self.images_post[index*self.batch_size:(index+1)*self.batch_size]
+        X_pre = self.images_pre[index*self.batch_size:(index+1)*self.batch_size].astype('float') / 255.0
+        X_post = self.images_post[index*self.batch_size:(index+1)*self.batch_size].astype('float') / 255.0
         y = self.labels[index*self.batch_size:(index+1)*self.batch_size]
 
         if self.train:
             return {'images_t0': X_pre, 'images_tt': X_post}, y
         else:
             return {'images_t0': X_pre, 'images_tt': X_post}
+            
 
 
 gen_tr = SiameseGenerator((im_tr_pre, im_tr_post), la_tr, batch_size=BATCH_SIZE)
 gen_va = SiameseGenerator((im_va_pre, im_va_post), la_va, batch_size=BATCH_SIZE)
+
 
 
 # print(im_tr_pre.shape[i])
@@ -389,6 +429,15 @@ if MODEL == 'double':
         args_dense = args_dense,
     )
 
+if MODEL == 'diff':
+    args_encode = dict(filters=filters, dropout=dropout,  n_blocks=5, n_convs=1)
+    model = difference_network(
+        shape=(*PATCH_SIZE, 3),  
+        args_encode = args_encode,
+        args_dense = args_dense,
+    )
+
+
 if MODEL == 'triple':
     args_encode = dict(filters=filters, dropout=dropout,  n_blocks=2, n_convs=3)
     model = double_convolutional_network(
@@ -396,6 +445,7 @@ if MODEL == 'triple':
         args_encode = args_encode,
         args_dense = args_dense,
     )
+
 
 optimizer = tf.keras.optimizers.legacy.Adam(learning_rate=lr)
 model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy',metrics.AUC(num_thresholds=200, curve='ROC', name='auc')])

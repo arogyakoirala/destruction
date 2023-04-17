@@ -4,7 +4,7 @@
 source ../environments/destr/bin/activate
 
 # declare -a Cities=("aleppo" "damascus" "daraa" "deir-ez-zor" "hama" "homs" "idlib" "raqqa")
-declare -a Cities=("aleppo")
+declare -a Cities=("aleppo" "daraa")
 # declare -a Cities=("raqqa")
 
 declare -a data_dir=$1

@@ -17,7 +17,7 @@ import shutil
 CITIES = ['aleppo', 'daraa']
 DATA_DIR = "../data/destr_data"
 OUTPUT_DIR = "../data/destr_outputs"
-MODEL = "siamese"
+MODEL = "double"
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -112,7 +112,7 @@ for city in CITIES:
     im_te_post = read_zarr(city, "im_te_post", DATA_DIR)
     la_te = read_zarr(city, "la_te", DATA_DIR)
 
-
+    print(f"{city}-tr_pre",im_tr_pre)
     steps = make_tuple_pair(im_tr_pre.shape[0], 100000) 
     for i, st in enumerate(steps):
         _im_tr_pre = im_tr_pre[st[0]:st[1]]
@@ -126,7 +126,7 @@ for city in CITIES:
         del _im_tr_pre, _im_tr_post, _la_tr
         print(f"{city} - TR: Copied {i+1} out of {len(steps)} blocks..")
 
-
+    print(f"{city}-va_pre",im_va_pre)
     steps = make_tuple_pair(im_va_pre.shape[0], 50000) 
     for i, st in enumerate(steps):
         _im_va_pre = im_va_pre[st[0]:st[1]]
@@ -140,6 +140,7 @@ for city in CITIES:
         del _im_va_pre, _im_va_post, _la_va
         print(f"{city} - VA: Copied {i+1} out of {len(steps)} blocks..")
 
+    print(f"{city}-te_pre",im_te_pre)
     steps = make_tuple_pair(im_te_pre.shape[0], 50000) 
     for i, st in enumerate(steps):
         _im_te_pre = im_te_pre[st[0]:st[1]]
