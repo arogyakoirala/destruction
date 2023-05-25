@@ -11,7 +11,7 @@ declare -a Dropouts=("0.15" "0.25" "0.35")
 declare -a LearningRates=("0.3" "0.03" "0.003")
 
 for city in "${Cities[@]}"; do
-    for dropouts in "${Dropouts[@]}"; do
+    for dropout in "${Dropouts[@]}"; do
         for batchsize in "${BatchSizes[@]}"; do
             for lr in "${LearningRates[@]}"; do
                 for units in "${Units[@]}"; do
