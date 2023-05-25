@@ -1,14 +1,12 @@
 universe = vanilla
 
-executable              = train_inmem.sh
-arguments               = raqqa
+executable              = train_inmem_hyp.sh
+arguments               = 
 log                     = condor_logs/logfile.$(Cluster).$(Process).log
 output                  = condor_logs/outfile.$(Cluster).$(Process).out
 error                   = condor_logs/errors.$(Cluster).$(Process).err
 
-
-request_gpus = 1
-
 # Needed to read .bashrc and conda environment
 getenv = True
+
 queue
