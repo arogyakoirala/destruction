@@ -187,7 +187,7 @@ damage = geopandas.GeoDataFrame(damage)
 for date in damage.drop('geometry', axis=1).columns:
     print(f'------ {date}')
     subset = damage[[date, 'geometry']].sort_values(by=date) # Sorting takes the max per pixel
-    subset[date] = np.where(subset[date] < 3, 0, 1)
+    subset[date] = np.where(subset[date] < 3, 0.0, 1.0)
     subset = rasterise(subset, profile, date)
     write_raster(subset, profile, f'{DATA_DIR}/{CITY}/labels/label_{date}.tif', nodata=-1, dtype='int8')
 del date, subset
