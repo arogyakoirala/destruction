@@ -8,5 +8,5 @@ error                   = condor_logs/errors.$(Cluster).$(Process).err
 
 # Needed to read .bashrc and conda environment
 getenv = True
-
+request_gpus = 2
 queue

@@ -26,6 +26,12 @@ parser.add_argument("--model", help="One of snn, double")
 parser.add_argument("--output_dir", help="Output dir")
 parser.add_argument("--data_dir", help="Path to data dir")
 
+parser.add_argument("--units", help="Units")
+parser.add_argument("--dropout", help="Dropout")
+parser.add_argument("--lr", help="Learning Rate")
+parser.add_argument("--filters", help="Number of filters")
+parser.add_argument("--batch_size", help="Batch Size")
+
 args = parser.parse_args()
 
 if args.cities:
@@ -40,6 +46,7 @@ if args.output_dir:
 
 if args.data_dir:
     DATA_DIR = args.data_dir
+
 
 def read_zarr(city, suffix, path="../data"):
     path = f'{path}/{city}/others/{city}_{suffix}.zarr'
@@ -213,6 +220,8 @@ DROPOUT = [0.1, 0.2]
 EPOCHS = [70, 100]
 UNITS = [64, 128]
 LR = [0.1]
+
+
 
 
 def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
@@ -402,9 +411,20 @@ epochs = random.choice(np.arange(EPOCHS[0],EPOCHS[1]))
 units = random.choice(UNITS)
 lr = random.choice(LR)
 
+
+if args.filters:
+    filters = int(args.filters)
+
+if args.units:
+    units = int(args.units) 
+
+if args.lr:
+    lr = float(args.lr)
+
+if args.dropout:
+    dropout = float(args.dropout)
+
 args  = dict(filters=filters, dropout=dropout, units=units) # ! Check parameters before run
-
-
 args_dense  = dict(units=units, dropout=dropout)
 parameters = f'batch_size={BATCH_SIZE} filters={filters}, \ndropout={np.round(dropout, 4)}, \nepochs={epochs}, \nunits={units}, \nlearning_rate={lr}'
 print(parameters)
