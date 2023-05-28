@@ -18,6 +18,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--city", help="City")
 parser.add_argument("--data_dir", help="Data Dir")
+parser.add_argument("--block_size", help="Data Dir")
 args = parser.parse_args()
 
 if args.city:
@@ -25,6 +26,9 @@ if args.city:
 
 if args.data_dir:
     DATA_DIR = args.data_dir
+
+if args.block_size:
+    BLOCK_SIZE = int(args.block_size)
 
 def read_zarr(city, suffix, path="../data"):
     path = f'{path}/{city}/others/{city}_{suffix}.zarr'

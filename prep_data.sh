@@ -20,7 +20,7 @@ for city in "${Cities[@]}"; do
     echo "Balancing:" $city
     python balance.py --city $city --data_dir $data_dir
     echo "Shuffling:" $city
-    python shuffle.py --city $city --data_dir $data_dir
+    python shuffle.py --city $city --data_dir $data_dir --block_size 25000
     echo "Shuffling again:" $city
-    python shuffle.py --city $city --data_dir $data_dir
+    python shuffle.py --city $city --data_dir $data_dir --block_size 50000
 done
