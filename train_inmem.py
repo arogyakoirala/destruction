@@ -232,7 +232,7 @@ if args.batch_size:
 def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
     tensor = layers.Dense(units=units, use_bias=False, kernel_initializer='he_normal', name=f'{name}_dense')(inputs)
     tensor = layers.Activation('relu', name=f'{name}_activation')(tensor)
-    # tensor = layers.BatchNormalization(name=f'{name}_normalisation')(tensor)
+    tensor = layers.BatchNormalization(name=f'{name}_normalisation')(tensor)
     tensor = layers.Dropout(rate=dropout, name=f'{name}_dropout')(tensor)
     return tensor 
 
@@ -254,7 +254,7 @@ def convolution_block(inputs, filters:int, dropout:float, name:str, n=1):
         else:
             tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution{i+1}')(tensor)
         tensor = layers.Activation('relu', name=f'{name}_activation{i+1}')(tensor)
-        # tensor = layers.BatchNormalization(name=f'{name}_normalisation{i+1}')(tensor)
+        tensor = layers.BatchNormalization(name=f'{name}_normalisation{i+1}')(tensor)
         tensor = layers.MaxPooling2D(pool_size=(2, 2), name=f'{name}_pooling')(tensor)
         tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout')(tensor)
     return tensor
@@ -453,7 +453,7 @@ if MODEL == 'snn':
     )
 
 if MODEL == 'double':
-    args_encode = dict(filters=filters, dropout=dropout, n_blocks=2, n_convs=1)
+    args_encode = dict(filters=filters, dropout=dropout, n_blocks=3, n_convs=2)
     
     model = double_convolutional_network(
         shape=(*PATCH_SIZE, 3),  
