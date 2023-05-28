@@ -221,11 +221,11 @@ f.close()
 
 BATCH_SIZE = 32
 PATCH_SIZE = (128,128)
-FILTERS = [16]
-DROPOUT = [0.1, 0.2]
+FILTERS = [32]
+DROPOUT = [0.12, 0.15]
 EPOCHS = [70, 100]
 UNITS = [64, 128]
-LR = [0.1]
+LR = [0.00003, 0.0001]
 
 
 if args.batch_size:
@@ -353,7 +353,6 @@ def double_convolutional_network(shape:tuple, args_encode:dict, args_dense:dict)
 
 class SiameseGenerator(Sequence):
     def __init__(self, images, labels, batch_size=BATCH_SIZE, train=True):
-    
         self.images_pre = images[0]
         self.images_post = images[1]
         self.labels = labels
@@ -381,10 +380,6 @@ class SiameseGenerator(Sequence):
 
 gen_tr = SiameseGenerator((im_tr_pre, im_tr_post), la_tr, batch_size=BATCH_SIZE)
 gen_va = SiameseGenerator((im_va_pre, im_va_post), la_va, batch_size=BATCH_SIZE)
-
-
-
-# print(im_tr_pre.shape[i])
 
 indices = np.random.randint(0, im_tr_pre.shape[0]//32, 5)
 
