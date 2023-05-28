@@ -255,8 +255,8 @@ def convolution_block(inputs, filters:int, dropout:float, name:str, n=1):
             tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution{i+1}')(tensor)
         tensor = layers.Activation('relu', name=f'{name}_activation{i+1}')(tensor)
         tensor = layers.BatchNormalization(name=f'{name}_normalisation{i+1}')(tensor)
-        tensor = layers.MaxPooling2D(pool_size=(2, 2), name=f'{name}_pooling')(tensor)
-        tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout')(tensor)
+        tensor = layers.MaxPooling2D(pool_size=(2, 2), name=f'{name}_pooling{i+1}')(tensor)
+        tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout{i+1}')(tensor)
     return tensor
 
 def distance_layer(inputs):
