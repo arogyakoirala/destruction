@@ -5,10 +5,10 @@ conda activate $EXERCISE_ENVIRONMENT
 
 declare -a Cities=("aleppo" "aleppo,damascus,hama,homs,idlib,raqqa,deir-ez-zor,daraa" "aleppo,damascus" "damascus") 
 declare -a BatchSizes=("32")
-declare -a Filters=("32" "64")
+declare -a Filters=("32")
 declare -a Units=("64" "128")
 declare -a Dropouts=("0.05" "0.15")
-declare -a LearningRates=("0.003")
+declare -a LearningRates=("0.00003")
 
 for city in "${Cities[@]}"; do
     for dropout in "${Dropouts[@]}"; do
