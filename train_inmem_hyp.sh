@@ -1,7 +1,8 @@
 #!/bin/bash
-EXERCISE_ENVIRONMENT="env"
-eval "$(conda shell.bash hook)"
-conda activate $EXERCISE_ENVIRONMENT
+# EXERCISE_ENVIRONMENT="env"
+# eval "$(conda shell.bash hook)"
+
+source $EXERCISE_ENVIRONMENT/bin/activate
 
 declare -a Cities=("aleppo" "aleppo,damascus,hama,homs,idlib,raqqa,deir-ez-zor,daraa" "aleppo,damascus" "damascus") 
 declare -a BatchSizes=("32")
@@ -16,8 +17,8 @@ for city in "${Cities[@]}"; do
             for lr in "${LearningRates[@]}"; do
                 for units in "${Units[@]}"; do
                     for filters in "${Filters[@]}"; do
-                        python -u train_inmem.py --cities $city --model double --filters $filters --units $units --lr $lr --batch_size $batchsize --dropout $dropout --data_dir ../data/destr_data --output_dir ../data/destr_outputs
-                        # python -u train_inmem.py --cities $city --model double --filters $filters --units $units --lr $lr --batch_size $batchsize --dropout $dropout --data_dir /lustre/ific.uv.es/ml/iae091/data --output_dir /lustre/ific.uv.es/ml/iae091/outputs
+                        # python -u train_inmem.py --cities $city --model double --filters $filters --units $units --lr $lr --batch_size $batchsize --dropout $dropout --data_dir ../data/destr_data --output_dir ../data/destr_outputs
+                        python -u train_inmem.py --cities $city --model double --filters $filters --units $units --lr $lr --batch_size $batchsize --dropout $dropout --data_dir /lustre/ific.uv.es/ml/iae091/data --output_dir /lustre/ific.uv.es/ml/iae091/outputs
                     done
                 done
             done
