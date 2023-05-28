@@ -2,7 +2,7 @@
 # EXERCISE_ENVIRONMENT="env"
 # eval "$(conda shell.bash hook)"
 
-source $EXERCISE_ENVIRONMENT/bin/activate
+source env/bin/activate
 
 declare -a Cities=("aleppo" "aleppo,damascus,hama,homs,idlib,raqqa,deir-ez-zor,daraa" "aleppo,damascus" "damascus") 
 declare -a BatchSizes=("32")
