@@ -34,6 +34,8 @@ parser.add_argument("--batch_size", help="Batch Size")
 
 args = parser.parse_args()
 
+print(args)
+
 if args.cities:
     CITIES = [el.strip() for el in args.cities.split(",")]
 

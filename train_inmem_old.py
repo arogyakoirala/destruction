@@ -48,6 +48,8 @@ if args.data_dir:
     DATA_DIR = args.data_dir
 
 
+print(args)
+
 def read_zarr(city, suffix, path="../data"):
     path = f'{path}/{city}/others/{city}_{suffix}.zarr'
     return zarr.open(path)
