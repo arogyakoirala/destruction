@@ -189,6 +189,7 @@ im_tr_pre = zarr.open(f"{TRAINING_DATA_DIR}/im_tr_pre.zarr")[:]
 im_tr_post = zarr.open(f"{TRAINING_DATA_DIR}/im_tr_post.zarr")[:]
 la_tr= zarr.open(f"{TRAINING_DATA_DIR}/la_tr.zarr")[:]
 
+print("Shuffling data..")
 im_tr_pre, im_tr_post, la_tr = shuffle_inmem(im_tr_pre, im_tr_post, la_tr)
 
 save_img( im_tr_pre, im_tr_post, la_tr, "tr_inmem_sfl_ex.png",)
@@ -451,7 +452,6 @@ if MODEL == 'snn':
 
 if MODEL == 'double':
     args_encode = dict(filters=filters, dropout=dropout, n_blocks=3, n_convs=2)
-    
     model = double_convolutional_network(
         shape=(*PATCH_SIZE, 3),  
         args_encode = args_encode,
