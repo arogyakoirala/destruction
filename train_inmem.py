@@ -184,9 +184,11 @@ def shuffle_inmem(pre, post, labels):
     np.random.shuffle(shuffled) 
     return pre[shuffled], post[shuffled], labels[shuffled]
 
-
+print("Load data: train pre..")
 im_tr_pre = zarr.open(f"{TRAINING_DATA_DIR}/im_tr_pre.zarr")[:]
+print("Load data: train post..")
 im_tr_post = zarr.open(f"{TRAINING_DATA_DIR}/im_tr_post.zarr")[:]
+print("Load data: train labels..")
 la_tr= zarr.open(f"{TRAINING_DATA_DIR}/la_tr.zarr")[:]
 
 print("Shuffling data..")
@@ -194,9 +196,11 @@ im_tr_pre, im_tr_post, la_tr = shuffle_inmem(im_tr_pre, im_tr_post, la_tr)
 
 save_img( im_tr_pre, im_tr_post, la_tr, "tr_inmem_sfl_ex.png",)
 
-
+print("Load data: val pre..")
 im_va_pre = zarr.open(f"{TRAINING_DATA_DIR}/im_va_pre.zarr")[:]
+print("Load data: val post..")
 im_va_post = zarr.open(f"{TRAINING_DATA_DIR}/im_va_post.zarr")[:]
+print("Load data: val labels..")
 la_va = zarr.open(f"{TRAINING_DATA_DIR}/la_va.zarr")[:]
 
 im_va_pre, im_va_post, la_va = shuffle_inmem(im_va_pre, im_va_post, la_va)
