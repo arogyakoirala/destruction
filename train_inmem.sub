@@ -1,7 +1,7 @@
 universe = vanilla
 
 executable              = train_inmem.sh
-arguments               = aleppo,damascus,deir-ez-zor,daraa,hama,homs,idlib,raqqa
+arguments               = aleppo,damascus,raqqa
 log                     = condor_logs/logfile.$(Cluster).$(Process).log
 output                  = condor_logs/outfile.$(Cluster).$(Process).out
 error                   = condor_logs/errors.$(Cluster).$(Process).err

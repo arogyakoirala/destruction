@@ -39,7 +39,6 @@ print(args)
 if args.cities:
     CITIES = [el.strip() for el in args.cities.split(",")]
 
-
 if args.model:
     MODEL = args.model
 
