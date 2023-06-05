@@ -2,7 +2,7 @@
 # source ../environments/destr/bin/activate
 source env/bin/activate
 
-declare -a Cities=("daraa")
+declare -a Cities=("hama")
 # declare -a Cities=("aleppo" "daraa")
 # declare -a Cities=("raqqa")
 
