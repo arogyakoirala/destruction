@@ -1,9 +1,8 @@
 #!/bin/bash
-# source /usr/local/anaconda3/condabin/conda
-# conda activate des-linux
-source ../environments/destr/bin/activate
+# source ../environments/destr/bin/activate
+source env/bin/activate
 
-declare -a Cities=("daraa" "deir-ez-zor" "hama" "homs" "idlib" "raqqa")
+declare -a Cities=("daraa")
 # declare -a Cities=("aleppo" "daraa")
 # declare -a Cities=("raqqa")
 
