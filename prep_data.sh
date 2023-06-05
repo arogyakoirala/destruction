@@ -3,7 +3,7 @@
 # conda activate des-linux
 source ../environments/destr/bin/activate
 
-declare -a Cities=("aleppo" "damascus" "daraa" "deir-ez-zor" "hama" "homs" "idlib" "raqqa")
+declare -a Cities=("daraa" "deir-ez-zor" "hama" "homs" "idlib" "raqqa")
 # declare -a Cities=("aleppo" "daraa")
 # declare -a Cities=("raqqa")
 
