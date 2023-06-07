@@ -3,4 +3,4 @@
 # eval "$(conda shell.bash hook)"
 # conda activate $EXERCISE_ENVIRONMENT
 
-python -u train.py --cities $1 --model double --data_dir /lustre/ific.uv.es/ml/iae091/data --output_dir /lustre/ific.uv.es/ml/iae091/outputs
+python -u train.py --cities aleppo,daraa,hama --model double --data_dir /lustre/ific.uv.es/ml/iae091/data --output_dir /lustre/ific.uv.es/ml/iae091/outputs
