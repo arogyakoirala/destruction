@@ -400,16 +400,6 @@ for j, ind in enumerate(indices):
     plt.savefig(f"{RUN_DIR}/traing_data_samples_{j+1}.png")
 
 
-
-# fig, ax = plt.subplots(2,5,dpi=200, figsize=(25,10))
-# ax = ax.flatten()
-# for i, image in enumerate(tr_pre[index:index+5]):
-#     ax[i].imshow(image)
-# for i, image in enumerate(tr_post[index:index+5]):
-#     ax[i+5].imshow(image)
-# plt.suptitle("Training set (sample images; top=pre, bottom=post)")
-# plt.savefig(f"{DATA_DIR}/{CITY}/others/tr_samples.png")
-
 print("+++++++++", gen_tr.__len__())
 MODEL_STORAGE_LOCATION = f"{RUN_DIR}/model"
 training_callbacks = [
@@ -468,7 +458,6 @@ if MODEL == 'diff':
         args_encode = args_encode,
         args_dense = args_dense,
     )
-
 
 if MODEL == 'triple':
     args_encode = dict(filters=filters, dropout=dropout,  n_blocks=2, n_convs=3)
