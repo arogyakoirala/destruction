@@ -500,7 +500,7 @@ if MODEL == 'triple':
         args_dense = args_dense,
     )
 
-optimizer = tf.keras.optimizers.legacy.Adam(learning_rate=lr)
+optimizer = tf.keras.optimizers.Adam(learning_rate=lr)
 model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy',metrics.AUC(num_thresholds=200, curve='ROC', name='auc')])
 model.summary()
 
