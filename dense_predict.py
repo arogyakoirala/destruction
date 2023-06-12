@@ -8,10 +8,11 @@ import rasterio
 from pathlib import Path
 import os
 import re
+import pandas as pd
 
-OUTPUT_DIR = "../outputs"
+OUTPUT_DIR = "../data/destr_outputs"
 CITIES = ['aleppo', 'damascus']
-DATA_DIR = "../data"
+DATA_DIR = "../data/destr_data"
 TILE_SIZE = (128,128)
 
 
@@ -164,34 +165,74 @@ auc = AUC(
 best_model = load_model(MODEL_PATH, custom_objects={'f1_m':f1_m, 'precision_m': precision_m, 'recall_m': recall_m, 'auc': auc, 'K': K})
 
 
+final_df = None
+
+
 for city in CITIES:
     pre_images  = search_data(pattern='^.*tif', directory=f'{DATA_DIR}/{city}/images/pre')
     post_images  = search_data(pattern='^.*tif', directory=f'{DATA_DIR}/{city}/images/post')
 
-    print(pre_images)
-    print(post_images)
+    # print(pre_images)
+    # print(post_images)
 
     _pred_dir = f"{PRED_DIR}/{city}"
     Path(_pred_dir).mkdir(parents=True, exist_ok=True)
 
 
     for j, pre in enumerate(pre_images):
-        print(pre)
+        
+        date_pre = pre.split("/")[-1].split("image_")[1].split(".tif")[0].replace("_", "-")
+        
         pre_image = read_raster(pre)
+
         pre_image = tile_sequences(np.array([pre_image]), TILE_SIZE)
         pre_image = np.squeeze(pre_image)
 
 
 
+
+
         for i in range(len(post_images)):
             image = post_images[i]
+
+            date_post = image.split("/")[-1].split("image_")[1].split(".tif")[0].replace("_", "-")
+            label_path = f"{DATA_DIR}/{city}/labels/label_{date_post}.tif"
+
+            
             profile = tiled_profile(image, tile_size=(*TILE_SIZE, 3))
             image = read_raster(image)
             image = tile_sequences(np.array([image]))
             image = np.squeeze(image)
 
 
+
             x = SiameseGenerator((pre_image, image), train=False)
-            labels = best_model.predict(x)
+            yhat = best_model.predict(x)
+
+
             # print(post_images[i].split('image_')[0])
-            write_raster(labels.reshape((profile['height'], profile['width'])), profile, f"{_pred_dir}/pred_{post_images[i].split('image_')[1]}") 
+
+            y = read_raster(label_path)
+
+
+
+
+            temp_df = pd.DataFrame()
+            temp_df['y'] = y.flatten().tolist()
+            temp_df['yhat'] = yhat.flatten().tolist()
+            temp_df['pre'] = date_pre
+            temp_df['post'] = date_post
+
+
+            if final_df is None:
+                final_df = temp_df
+            else:
+                final_df = pd.concat([final_df, temp_df], ignore_index=True)
+
+
+
+            # print(labels)
+            write_raster(yhat.reshape((profile['height'], profile['width'])), profile, f"{_pred_dir}/pred_{post_images[i].split('image_')[1]}") 
+
+
+final_df.to_csv(f"{RUN_DIR}/actual_v_predicted_{RUN_ID}.csv")
