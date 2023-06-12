@@ -12,7 +12,7 @@ import pandas as pd
 
 # OUTPUT_DIR = "../data/destr_outputs"
 OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
-CITIES = ['aleppo', 'damascus']
+CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
 # DATA_DIR = "../data/destr_data"
 DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
 TILE_SIZE = (128,128)
