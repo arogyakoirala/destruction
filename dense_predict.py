@@ -10,9 +10,11 @@ import os
 import re
 import pandas as pd
 
-OUTPUT_DIR = "../data/destr_outputs"
+# OUTPUT_DIR = "../data/destr_outputs"
+OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
 CITIES = ['aleppo', 'damascus']
-DATA_DIR = "../data/destr_data"
+# DATA_DIR = "../data/destr_data"
+DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
 TILE_SIZE = (128,128)
 
 
@@ -222,6 +224,7 @@ for city in CITIES:
             temp_df['yhat'] = yhat.flatten().tolist()
             temp_df['pre'] = date_pre
             temp_df['post'] = date_post
+            temp_df['city'] = city
 
 
             if final_df is None:
