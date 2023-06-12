@@ -186,6 +186,7 @@ for city in CITIES:
         date_pre = pre.split("/")[-1].split("image_")[1].split(".tif")[0].replace("_", "-")
         
         pre_image = read_raster(pre)
+        print(f"{city} - Using pre image: {date_pre}")
 
         pre_image = tile_sequences(np.array([pre_image]), TILE_SIZE)
         pre_image = np.squeeze(pre_image)
@@ -236,6 +237,7 @@ for city in CITIES:
 
             # print(labels)
             write_raster(yhat.reshape((profile['height'], profile['width'])), profile, f"{_pred_dir}/pred_{post_images[i].split('image_')[1]}") 
+            print(f"\t - {date_post} predictions completed")
 
 
 final_df.to_csv(f"{RUN_DIR}/actual_v_predicted_{RUN_ID}.csv")
