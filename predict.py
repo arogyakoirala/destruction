@@ -237,6 +237,8 @@ for city in CITIES:
             # print(labels)
             write_raster(yhat.reshape((profile['height'], profile['width'])), profile, f"{_pred_dir}/pred_{post_images[i].split('image_')[1]}") 
             print(f"\t - {date_post} predictions completed")
+            print(f"\t\t - yhat samples: {yhat.flatten().tolist()[0:10])}")
 
 
-final_df.to_csv(f"{RUN_DIR}/actual_v_predicted_{RUN_ID}.csv")
+    final_df.to_csv(f"{RUN_DIR}/actual_v_predicted_{RUN_ID}_{city}.csv")
+    final_df = None
