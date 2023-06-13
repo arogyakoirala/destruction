@@ -10,11 +10,11 @@ import os
 import re
 import pandas as pd
 
-# OUTPUT_DIR = "../data/destr_outputs"
-OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
+OUTPUT_DIR = "../data/destr_outputs"
+# OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
 CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
-# DATA_DIR = "../data/destr_data"
-DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
+DATA_DIR = "../data/destr_data"
+# DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
 TILE_SIZE = (128,128)
 
 
@@ -189,10 +189,7 @@ for city in CITIES:
         print(f"{city} - Using pre image: {date_pre}")
 
         pre_image = tile_sequences(np.array([pre_image]), TILE_SIZE)
-        pre_image = np.squeeze(pre_image)
-
-
-
+        pre_image = np.squeeze(pre_image) / 255.0
 
 
         for i in range(len(post_images)):
@@ -204,8 +201,10 @@ for city in CITIES:
             
             profile = tiled_profile(image, tile_size=(*TILE_SIZE, 3))
             image = read_raster(image)
+
             image = tile_sequences(np.array([image]))
-            image = np.squeeze(image)
+            image = np.squeeze(image) / 255.0
+
 
 
 
