@@ -1,4 +1,4 @@
-affine==2.3.1                                                                                                                                                                                       [5/1672]
+affine==2.3.1
 asciitree==0.3.3                                                                                                                                                                                            
 attrs==22.2.0                                                                                                                                                                                               
 certifi==2022.12.7                                                                                                                                                                                          
