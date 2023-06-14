@@ -10,11 +10,13 @@ import os
 import re
 import pandas as pd
 
-# OUTPUT_DIR = "../data/destr_outputs"
-OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
 CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
-# DATA_DIR = "../data/destr_data"
+OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
 DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
+
+# CITIES = ['aleppo', 'daraa']
+# OUTPUT_DIR = "../data/destr_outputs"
+# DATA_DIR = "../data/destr_data"
 TILE_SIZE = (128,128)
 
 
@@ -171,6 +173,7 @@ final_df = None
 
 
 for city in CITIES:
+    print(city)
     pre_images  = search_data(pattern='^.*tif', directory=f'{DATA_DIR}/{city}/images/pre')
     post_images  = search_data(pattern='^.*tif', directory=f'{DATA_DIR}/{city}/images/post')
 
@@ -204,20 +207,9 @@ for city in CITIES:
 
             image = tile_sequences(np.array([image]))
             image = np.squeeze(image) / 255.0
-
-
-
-
             x = SiameseGenerator((pre_image, image), train=False)
             yhat = best_model.predict(x)
-
-
-            # print(post_images[i].split('image_')[0])
-
             y = read_raster(label_path)
-
-
-
 
             temp_df = pd.DataFrame()
             temp_df['y'] = y.flatten().tolist()
@@ -225,7 +217,6 @@ for city in CITIES:
             temp_df['pre'] = date_pre
             temp_df['post'] = date_post
             temp_df['city'] = city
-
 
             if final_df is None:
                 final_df = temp_df
@@ -237,7 +228,7 @@ for city in CITIES:
             # print(labels)
             write_raster(yhat.reshape((profile['height'], profile['width'])), profile, f"{_pred_dir}/pred_{post_images[i].split('image_')[1]}") 
             print(f"\t - {date_post} predictions completed")
-            print(f"\t\t - yhat samples: {yhat.flatten().tolist()[0:10]}")
+            print(f"\t\t - yhat samples: {yhat.flatten().tolist()[0:5]}")
 
 
     final_df.to_csv(f"{RUN_DIR}/actual_v_predicted_{RUN_ID}_{city}.csv")
