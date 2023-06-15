@@ -6,7 +6,7 @@
 declare -a Dropouts=("0.05" "0.10" "0.15")
 declare -a Units=("64" "128" "256")
 declare -a Filters=("32" "64" "128")
-declare -a LearningRates=("0.00001" "0.00003" "0.0001" "0.0003")
+declare -a LearningRates=("0.00003" "0.0001" "0.0003")
 
 
 
