@@ -14,8 +14,8 @@ for dropout in "${Dropouts[@]}"; do
     for lr in "${LearningRates[@]}"; do
         for filter in "${Filters[@]}"; do
             for unit in "${Units[@]}"; do
-                python -u train.py --model double --dropout $dropout --lr $lr --filters $filter --units $unit --data_dir ../data/destr_data --output_dir ../data/destr_outputs
-                # python -u train.py --model double --dropout $dropout --lr $lr --filters $filter --units $unit --data_dir /lustre/ific.uv.es/ml/iae091/data --output_dir /lustre/ific.uv.es/ml/iae091/outputs 
+                # python -u train.py --model double --dropout $dropout --lr $lr --filters $filter --units $unit --data_dir ../data/destr_data --output_dir ../data/destr_outputs
+                python -u train.py --model double --dropout $dropout --lr $lr --filters $filter --units $unit --data_dir /lustre/ific.uv.es/ml/iae091/data --output_dir /lustre/ific.uv.es/ml/iae091/outputs 
             done
         done
     done
