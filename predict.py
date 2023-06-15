@@ -12,14 +12,14 @@ import pandas as pd
 import gc
 from sys import getsizeof
 ## For artemisa
-# CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
-# OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
-# DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
+CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
+OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
+DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
 
 ## For workstation
-CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
-OUTPUT_DIR = "../outputs"
-DATA_DIR = "../data"
+# CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
+# OUTPUT_DIR = "../outputs"
+# DATA_DIR = "../data"
 
 ## For local
 # CITIES = ['aleppo', 'daraa']
@@ -223,7 +223,6 @@ for city in CITIES:
             profile = tiled_profile(image, tile_size=(*TILE_SIZE, 3))
 
             print("5")
-
             image = read_raster(image)
 
             print("6")
