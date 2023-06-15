@@ -14,7 +14,8 @@ import time
 import shutil
 
 
-CITIES = ['aleppo', 'damascus', 'deir-ez-zor', 'daraa', 'hama', 'homs', 'idlib', 'raqqa']
+# CITIES = ['aleppo', 'damascus', 'deir-ez-zor', 'daraa', 'hama', 'homs', 'idlib', 'raqqa']
+CITIES = ['aleppo', 'daraa']
 DATA_DIR = "../data/destr_data"
 OUTPUT_DIR = "../data/destr_outputs"
 MODEL = "double"
