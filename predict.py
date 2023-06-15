@@ -10,21 +10,21 @@ import os
 import re
 import pandas as pd
 import gc
-
+from sys import getsizeof
 ## For artemisa
 # CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
 # OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
 # DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
 
 ## For workstation
-CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
-OUTPUT_DIR = "../outputs"
-DATA_DIR = "../data"
+# CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
+# OUTPUT_DIR = "../outputs"
+# DATA_DIR = "../data"
 
 ## For local
-# CITIES = ['aleppo', 'daraa']
-# OUTPUT_DIR = "../data/destr_outputs"
-# DATA_DIR = "../data/destr_data"
+CITIES = ['aleppo', 'daraa']
+OUTPUT_DIR = "../data/destr_outputs"
+DATA_DIR = "../data/destr_data"
 
 TILE_SIZE = (128,128)
 
@@ -200,11 +200,7 @@ for city in CITIES:
         
         date_pre = pre.split("/")[-1].split("image_")[1].split(".tif")[0].replace("_", "-")
         
-        pre_image = read_raster(pre)
-        print(f"{city} - Using pre image: {date_pre}")
-
-        pre_image = tile_sequences(np.array([pre_image]), TILE_SIZE)
-        pre_image = np.squeeze(pre_image) / 255.0
+        
 
 
         for i in range(len(post_images)):
@@ -213,6 +209,11 @@ for city in CITIES:
             date_post = image.split("/")[-1].split("image_")[1].split(".tif")[0].replace("_", "-")
             label_path = f"{DATA_DIR}/{city}/labels/label_{date_post}.tif"
 
+            pre_image = read_raster(pre)
+            print(f"{city} - Using pre image: {date_pre}")
+
+            pre_image = tile_sequences(np.array([pre_image]), TILE_SIZE)
+            pre_image = np.squeeze(pre_image) / 255.0
             
             profile = tiled_profile(image, tile_size=(*TILE_SIZE, 3))
             image = read_raster(image)
@@ -251,13 +252,17 @@ for city in CITIES:
             else:
                 temp_df.to_csv(out_csv_path, index=False)
 
-            print("Garbage collection")
-            del image, profile, x, y, temp_df
-            gc.collect()
-
-            list_of_locals = locals().values()
+            print("\t\t - Garbage collection")
+            list_of_locals = list(locals())
             for var in list_of_locals:
-                print("variable {} has size {}".format(var,getsizeof(locals()[var])))
-            print("Garbage collection complete")
+                if var == "pre_image":
+                    print("\t\t - variable {} has size {}".format(var,getsizeof(locals()[var])))
+                if var == "image":
+                    print("\t\t - variable {} has size {}".format(var,getsizeof(locals()[var])))
+            del pre_image, image, profile, x, y, temp_df
+
+           
+            gc.collect()
+            print("\t\t - Garbage collection complete")
 
     final_df = None
