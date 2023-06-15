@@ -9,7 +9,7 @@ from pathlib import Path
 import os
 import re
 import pandas as pd
-
+import gc
 
 ## For artemisa
 # CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
@@ -251,6 +251,9 @@ for city in CITIES:
             else:
                 temp_df.to_csv(out_csv_path, index=False)
 
+            print("Garbage collection")
             del image, profile, x, y, temp_df
+            gc.collect()
+            print("Garbage collection complete")
 
     final_df = None
