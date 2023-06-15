@@ -17,14 +17,14 @@ from sys import getsizeof
 # DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
 
 ## For workstation
-# CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
-# OUTPUT_DIR = "../outputs"
-# DATA_DIR = "../data"
+CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
+OUTPUT_DIR = "../outputs"
+DATA_DIR = "../data"
 
 ## For local
-CITIES = ['aleppo', 'daraa']
-OUTPUT_DIR = "../data/destr_outputs"
-DATA_DIR = "../data/destr_data"
+# CITIES = ['aleppo', 'daraa']
+# OUTPUT_DIR = "../data/destr_outputs"
+# DATA_DIR = "../data/destr_data"
 
 TILE_SIZE = (128,128)
 
