@@ -211,16 +211,27 @@ for city in CITIES:
             date_post = image.split("/")[-1].split("image_")[1].split(".tif")[0].replace("_", "-")
             label_path = f"{DATA_DIR}/{city}/labels/label_{date_post}.tif"
 
+            print("3")
+
             pre_image = read_raster(pre)
             print(f"{city} - Using pre image: {date_pre}")
 
+            print("4")
             pre_image = tile_sequences(np.array([pre_image]), TILE_SIZE)
             pre_image = np.squeeze(pre_image) / 255.0
             
             profile = tiled_profile(image, tile_size=(*TILE_SIZE, 3))
+
+            print("5")
+
             image = read_raster(image)
 
+            print("6")
+
             image = tile_sequences(np.array([image]))
+
+            print("7")
+
             image = np.squeeze(image) / 255.0
             x = SiameseGenerator((pre_image, image), train=False)
             yhat = best_model.predict(x)
