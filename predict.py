@@ -186,7 +186,9 @@ final_df = None
 
 for city in CITIES:
     print(city)
+    print("1")
     pre_images  = search_data(pattern='^.*tif', directory=f'{DATA_DIR}/{city}/images/pre')
+    print("2")
     post_images  = search_data(pattern='^.*tif', directory=f'{DATA_DIR}/{city}/images/post')
 
     # print(pre_images)
@@ -253,13 +255,13 @@ for city in CITIES:
                 temp_df.to_csv(out_csv_path, index=False)
 
             print("\t\t - Garbage collection")
-            list_of_locals = list(locals())
-            for var in list_of_locals:
-                print("\t\t - variable {} has size {}".format(var,getsizeof(locals()[var])))
-            del pre_image, image, profile, x, y, temp_df
+            del pre_image, image, profile, x, y, temp_df, yhat
 
            
             gc.collect()
+            list_of_locals = list(locals())
+            for var in list_of_locals:
+                print("\t\t - variable {} has size {}".format(var,getsizeof(locals()[var])))
             print("\t\t - Garbage collection complete")
 
     final_df = None
