@@ -34,6 +34,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--cities", help="Cities, comma separated. Eg: aleppo,raqqa,damascus")
 parser.add_argument("run_id", help="Model Run ID for which we want to generate predictions")
+
 args = parser.parse_args()
 
 if args.cities:
@@ -44,6 +45,8 @@ RUN_ID = int(args.run_id)
 RUN_DIR = f'{OUTPUT_DIR}/{RUN_ID}'
 MODEL_PATH = f'{RUN_DIR}/model'
 PRED_DIR = f'{OUTPUT_DIR}/{RUN_ID}/predictions'
+SAVE_RASTER = False
+
 
 
 def make_tuple_pair(n, step_size):
@@ -131,7 +134,7 @@ def read_raster(source:str, band:int=None, window=None, dtype:str='uint8', profi
         return image
 
 
-def write_raster(array:np.ndarray, profile, destination:str, nodata:int=None, dtype:str='float64') -> None:
+def write_raster(array:np.ndarray, profile, destination:str, nodata:int=None, dtype:str='float32') -> None:
     '''Writes a numpy array as a raster'''
     if array.ndim == 2:
         array = np.expand_dims(array, 2)
@@ -227,18 +230,27 @@ for city in CITIES:
             temp_df['post'] = date_post
             temp_df['city'] = city
 
-            if final_df is None:
-                final_df = temp_df
-            else:
-                final_df = pd.concat([final_df, temp_df], ignore_index=True)
+            # if final_df is None:
+            #     final_df = temp_df
+            # else:
+            #     final_df = pd.concat([final_df, temp_df], ignore_index=True)
 
 
 
             # print(labels)
-            write_raster(yhat.reshape((profile['height'], profile['width'])), profile, f"{_pred_dir}/pred_{post_images[i].split('image_')[1]}") 
+            if SAVE_RASTER:
+                print("Saving raster...")
+                write_raster(yhat.reshape((profile['height'], profile['width'])), profile, f"{_pred_dir}/pred_{post_images[i].split('image_')[1]}") 
             print(f"\t - {date_post} predictions completed")
             print(f"\t\t - yhat samples: {yhat.flatten().tolist()[0:5]}")
-            del image, temp_df
 
-            final_df.to_csv(f"{RUN_DIR}/actual_v_predicted_{RUN_ID}_{city}.csv", index=False)
+
+            out_csv_path = f"{RUN_DIR}/actual_v_predicted_{RUN_ID}_{city}.csv"
+            if os.path.exists(out_csv_path):
+                temp_df.to_csv(out_csv_path, mode="a", index=False)
+            else:
+                temp_df.to_csv(out_csv_path, index=False)
+
+            del image, profile, x, y, temp_df
+
     final_df = None
