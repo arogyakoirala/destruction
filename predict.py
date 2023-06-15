@@ -255,10 +255,7 @@ for city in CITIES:
             print("\t\t - Garbage collection")
             list_of_locals = list(locals())
             for var in list_of_locals:
-                if var == "pre_image":
-                    print("\t\t - variable {} has size {}".format(var,getsizeof(locals()[var])))
-                if var == "image":
-                    print("\t\t - variable {} has size {}".format(var,getsizeof(locals()[var])))
+                print("\t\t - variable {} has size {}".format(var,getsizeof(locals()[var])))
             del pre_image, image, profile, x, y, temp_df
 
            
