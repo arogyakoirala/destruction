@@ -254,6 +254,10 @@ for city in CITIES:
             print("Garbage collection")
             del image, profile, x, y, temp_df
             gc.collect()
+
+            list_of_locals = locals().values()
+            for var in list_of_locals:
+                print("variable {} has size {}".format(var,getsizeof(locals()[var])))
             print("Garbage collection complete")
 
     final_df = None
