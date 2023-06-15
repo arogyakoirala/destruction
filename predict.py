@@ -25,6 +25,7 @@ DATA_DIR = "../data"
 # CITIES = ['aleppo', 'daraa']
 # OUTPUT_DIR = "../data/destr_outputs"
 # DATA_DIR = "../data/destr_data"
+
 TILE_SIZE = (128,128)
 
 
@@ -237,7 +238,7 @@ for city in CITIES:
             write_raster(yhat.reshape((profile['height'], profile['width'])), profile, f"{_pred_dir}/pred_{post_images[i].split('image_')[1]}") 
             print(f"\t - {date_post} predictions completed")
             print(f"\t\t - yhat samples: {yhat.flatten().tolist()[0:5]}")
+            del image, temp_df
 
-
-    final_df.to_csv(f"{RUN_DIR}/actual_v_predicted_{RUN_ID}_{city}.csv")
+            final_df.to_csv(f"{RUN_DIR}/actual_v_predicted_{RUN_ID}_{city}.csv", index=False)
     final_df = None
