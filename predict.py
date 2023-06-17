@@ -3,7 +3,7 @@ import os
 import re
 parser = argparse.ArgumentParser()
 parser.add_argument("run_id", help="Model Run ID for which we want to generate predictions")
-parser.add_argument("cities", help="Pre File")
+parser.add_argument("--cities", help="Pre File")
 parser.add_argument("--data_dir", help="Model Run ID for which we want to generate predictions")
 parser.add_argument("--output_dir", help="Model Run ID for which we want to generate predictions")
 args = parser.parse_args()
