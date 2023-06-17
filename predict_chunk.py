@@ -50,6 +50,8 @@ SAVE_RASTER = False
 if os.path.exists(PRED_DIR):
     shutil.rmtree(PRED_DIR)
 
+
+print(args)
 Path(PRED_DIR).mkdir(exist_ok=True, parents=True)
 
 class ImageGenerator(Sequence):
