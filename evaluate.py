@@ -14,15 +14,14 @@ parser.add_argument("--data_dir", help="Path to data dir")
 args = parser.parse_args()
 
 
-# ## For artemisa
-# OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
-# DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
-
-
-
 # For local
 OUTPUT_DIR = "../data/destr_outputs"
 DATA_DIR = "../data/destr_data"
+
+## For artemisa
+OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
+DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
+
 BATCH_SIZE = 32
 
 if args.output_dir:
