@@ -41,6 +41,8 @@ for i, line in enumerate(fp):
         break
 fp.close()
 
+print(f"Identifed cities: {CITIES}")
+
 TRAINING_DATA_DIR = OUTPUT_DIR + f"/data/{'-'.join(CITIES)}"
 
 
