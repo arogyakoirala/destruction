@@ -221,6 +221,7 @@ predictions['city'] = city
 
 
 predictions_csv = f"{RUN_DIR}/predictions_{city}.csv"
+print(predictions_csv)
 if os.path.exists(predictions_csv):
     predictions.to_csv(predictions_csv, mode="a", index=False)
 else:

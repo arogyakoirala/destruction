@@ -13,11 +13,20 @@ import matplotlib.pyplot as plt
 import time
 import shutil
 
-
-CITIES = ['aleppo', 'damascus', 'deir-ez-zor', 'daraa', 'hama', 'homs', 'idlib', 'raqqa']
+## For local
 # CITIES = ['aleppo', 'daraa']
-DATA_DIR = "../data/destr_data"
-OUTPUT_DIR = "../data/destr_outputs"
+# OUTPUT_DIR = "../data/destr_outputs"
+# DATA_DIR = "../data/destr_data"
+
+## For artemisa
+CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
+OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
+DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
+
+## For workstation
+# CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
+# OUTPUT_DIR = "../outputs"
+# DATA_DIR = "../data"
 MODEL = "double"
 
 import argparse
