@@ -12,7 +12,7 @@ import pandas as pd
 import gc
 from sys import getsizeof
 ## For artemisa
-CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
+CITIES = ['daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
 OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
 DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
 
@@ -185,10 +185,7 @@ final_df = None
 
 
 for city in CITIES:
-    print(city)
-    print("1")
     pre_images  = search_data(pattern='^.*tif', directory=f'{DATA_DIR}/{city}/images/pre')
-    print("2")
     post_images  = search_data(pattern='^.*tif', directory=f'{DATA_DIR}/{city}/images/post')
 
     # print(pre_images)
@@ -201,35 +198,25 @@ for city in CITIES:
     for j, pre in enumerate(pre_images):
         
         date_pre = pre.split("/")[-1].split("image_")[1].split(".tif")[0].replace("_", "-")
-        
-        
-
-
         for i in range(len(post_images)):
             image = post_images[i]
 
             date_post = image.split("/")[-1].split("image_")[1].split(".tif")[0].replace("_", "-")
             label_path = f"{DATA_DIR}/{city}/labels/label_{date_post}.tif"
 
-            print("3")
 
             pre_image = read_raster(pre)
             print(f"{city} - Using pre image: {date_pre}")
 
-            print("4")
             pre_image = tile_sequences(np.array([pre_image]), TILE_SIZE)
             pre_image = np.squeeze(pre_image) / 255.0
             
             profile = tiled_profile(image, tile_size=(*TILE_SIZE, 3))
 
-            print("5")
             image = read_raster(image)
-
-            print("6")
 
             image = tile_sequences(np.array([image]))
 
-            print("7")
 
             image = np.squeeze(image) / 255.0
             x = SiameseGenerator((pre_image, image), train=False)
