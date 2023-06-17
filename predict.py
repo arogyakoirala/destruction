@@ -68,7 +68,7 @@ for city in CITIES:
 
     for pre_ in pre_images:
         for post_ in post_images:
-            print(pre_.split("/")[-1], post_.split("/")[-1])
+            print(city, "-", pre_.split("/")[-1], post_.split("/")[-1])
 
             os.system(f"python -m predict_chunk {args.run_id} {pre_} {post_} --data_dir {DATA_DIR} --output_dir {OUTPUT_DIR}")
 
