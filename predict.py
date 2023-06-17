@@ -15,14 +15,14 @@ python -m predict 3 aleppo,daraa
 
 
 ## For local
-CITIES = ['aleppo', 'daraa']
-OUTPUT_DIR = "../data/destr_outputs"
-DATA_DIR = "../data/destr_data"
+# CITIES = ['aleppo', 'daraa']
+# OUTPUT_DIR = "../data/destr_outputs"
+# DATA_DIR = "../data/destr_data"
 
 ## For artemisa
-# CITIES = ['daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
-# OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
-# DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
+CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
+OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
+DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
 
 ## For workstation
 # CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
