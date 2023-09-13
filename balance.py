@@ -69,6 +69,7 @@ for i, bl in enumerate(blocks):
         
 pos = sorted(pos)
 neg = labels.shape[0] - len(pos)
+print(pos, neg)
 add = random.choices(pos, k=(neg - len(pos)))
 add = sorted(add)
 

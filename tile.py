@@ -163,7 +163,7 @@ for j, pre_image in enumerate(pre_images):
         label = labels[i]
         label = read_raster(label, 1)
         label = np.squeeze(label.flatten())
-        unc = np.where(label == -1)
+        unc = np.where(label == 99)
         label = np.delete(label, unc, 0)
 
         image = post_images[i]

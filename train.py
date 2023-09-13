@@ -412,7 +412,7 @@ class SiameseGenerator(Sequence):
     def __getitem__(self, index):
         X_pre = self.images_pre[index*self.batch_size:(index+1)*self.batch_size].astype('float') / 255.0
         X_post = self.images_post[index*self.batch_size:(index+1)*self.batch_size].astype('float') / 255.0
-        y = self.labels[index*self.batch_size:(index+1)*self.batch_size]
+        y = self.labels[index*self.batch_size:(index+1)*self.batch_size] * 1.0
 
         if self.train:
             return {'images_t0': X_pre, 'images_tt': X_post}, y
@@ -425,7 +425,7 @@ gen_tr = SiameseGenerator((im_tr_pre, im_tr_post), la_tr, batch_size=BATCH_SIZE)
 gen_va = SiameseGenerator((im_va_pre, im_va_post), la_va, batch_size=BATCH_SIZE)
 
 
-# print(im_tr_pre.shape[i])
+# print(gen_tr.__getitem__(10))
 
 indices = np.random.randint(0, im_tr_pre.shape[0]//32, 5)
 
