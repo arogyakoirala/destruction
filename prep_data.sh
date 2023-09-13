@@ -2,9 +2,9 @@
 # source ../environments/destr/bin/activate
 source env/bin/activate
 
-declare -a Cities=("aleppo" "daraa" "damascus" "deir-ez-zor" "hama" "homs" "idlib" "raqqa")
+# declare -a Cities=("aleppo" "daraa" "damascus" "deir-ez-zor" "hama" "homs" "idlib" "raqqa")
 # declare -a Cities=("aleppo" "daraa")
-# declare -a Cities=("raqqa")
+declare -a Cities=("aleppo")
 
 declare -a data_dir=$1
 echo "Data Dir: $data_dir";
@@ -19,7 +19,7 @@ for city in "${Cities[@]}"; do
     echo "Balancing:" $city
     python balance.py --city $city --data_dir $data_dir
     echo "Shuffling:" $city
-    python shuffle.py --city $city --data_dir $data_dir --block_size 10000
+    python shuffle.py --city $city --data_dir $data_dir --block_size 1000
     echo "Shuffling again:" $city
-    python shuffle.py --city $city --data_dir $data_dir --block_size 20000
+    python shuffle.py --city $city --data_dir $data_dir --block_size 2000
 done

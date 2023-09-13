@@ -123,7 +123,7 @@ pre_cols = [f.split("image_")[1].split(".tif")[0].replace("_", "-") for f in pre
 # for i, col in enumerate(sorted(damage.drop('geometry', axis=1).columns)):
 #     if col not in pre_cols:
 #         pre_cols.append(col)
-        
+
 damage[pre_cols] = 0.0
 
 f = open(f"{DATA_DIR}/{CITY}/others/metadata.txt", "a")
@@ -134,62 +134,36 @@ f.write(f"Using {pre_cols} as pre-dates\n")
 # Get post cols
 post_cols = sorted([col for col in damage.drop('geometry', axis=1).columns if col not in pre_cols])
 f.write(f"Considering {post_cols} as post-dates")
-# Fill uncertains between two dates
-last_known_date = known_dates[0]
-for col in post_cols:
-    if col in known_dates and time.strptime(col, "%Y-%m-%d") >= time.strptime(last_known_date, "%Y-%m-%d"):
-        last_known_date = col
-        if(known_dates.index(col) < len(known_dates)-1):
-            next_known_date = known_dates[known_dates.index(col)+1]
-            dates_between = post_cols[post_cols.index(last_known_date)+1:post_cols.index(next_known_date)]
-            zeros = list(*np.where(damage[next_known_date] == 0.0))
-            not_equal = list(*np.where(damage[last_known_date] != damage[next_known_date]))
-            for date in dates_between:
-                damage.loc[not_equal, date] = -1
-                
-# Backfill the zeros
-filled = []
-# last_known_date = None
-for j, col in enumerate(post_cols):
-    zeros = list(*np.where(damage[col] == 0.0))
-    cols_before_date = [c for c in post_cols if time.strptime(c, "%Y-%m-%d")  < time.strptime(col, "%Y-%m-%d") ]
-    for i, date in enumerate(cols_before_date):       
-        if date not in filled and date not in known_dates and time.strptime(date, "%Y-%m-%d") < time.strptime(last_annotation_date, "%Y-%m-%d"):
-            zeros = list(*np.where(damage[col] == 0.0))
-            uncertains = list(*np.where(damage[date] != -1))
-            n_uncertains = list(set(zeros).intersection(set(uncertains)))
-            damage.loc[n_uncertains, date] = 0.0
-            filled.append(date) 
-            
-# Label the uncertain class everywhere now
-geometry = damage.geometry
-damage_ = damage.drop('geometry', axis=1)
-damage_['end'] = damage[last_annotation_date]
-damage_ = damage_.T
-for col in damage_.columns:
-    uncertains = np.where(damage_[col].fillna(method='ffill') != damage_[col].fillna(method='bfill'))
-    damage_.iloc[uncertains, col] = -1
-damage = damage_.T
-damage['geometry'] = geometry
-damage = geopandas.GeoDataFrame(damage)
 
-# Forward fill the rest
-geometry = damage.geometry
-damage_ = damage.drop('geometry', axis=1)
-damage_ = damage_.T
-damage_ = damage_.fillna(method='ffill')
-damage = damage_.T
-damage = damage.drop('end', axis=1)
-damage['geometry'] = geometry
-damage = geopandas.GeoDataFrame(damage)
+
+# Corrected label assignment
+geom = damage['geometry']
+damage = damage.drop('geometry', axis=1).T
+for col in damage.columns:
+    unc = np.where(damage[col].fillna(method='ffill') != damage[col].fillna(method='bfill'))
+    if int(col)%1000 == 0:
+        print(col)
+
+    for i in unc:
+        damage[col][i] = -1
+
+for col in damage.columns:
+    damage[col] = damage[col].fillna(method='ffill')
+
+damage = damage.T
+damage['geometry'] = geom
+damage = damage
 
 # Writes damage labels
 for date in damage.drop('geometry', axis=1).columns:
     print(f'------ {date}')
     subset = damage[[date, 'geometry']].sort_values(by=date) # Sorting takes the max per pixel
-    subset[date] = np.where(subset[date] < 3, 0.0, 1.0)
+    subset[date] = np.where((subset[date] == -1.0) , 99.0, subset[date])
+    subset[date] = np.where((subset[date] < 3), 0, subset[date])
+    subset[date] = np.where((subset[date] == 3), 1, subset[date])
+    subset[date] = np.where((subset[date] == 99), -1, subset[date])
     subset = rasterise(subset, profile, date)
-    write_raster(subset, profile, f'{DATA_DIR}/{CITY}/labels/label_{date}.tif', nodata=-1, dtype='int8')
+    write_raster(subset, profile, f'{DATA_DIR}/{CITY}/labels/label_{date}.tif', dtype='int8')
 del date, subset
 
 f.close()

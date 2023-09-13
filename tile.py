@@ -74,7 +74,10 @@ def tile_sequences(images:np.ndarray, tile_size:tuple=(128, 128)) -> np.ndarray:
 
 def sample_split(images:np.ndarray, samples:dict) -> list:
     '''Splits the data structure into multiple samples'''
+    print(np.unique(samples))
     samples = [images[samples == value, ...] for value in np.unique(samples)]
+    # print(len(samples))
+    # print(samples)
     return samples
 
 
@@ -172,11 +175,12 @@ for j, pre_image in enumerate(pre_images):
         image = np.delete(image, unc, 0)
 
         _pre_image = np.delete(pre_image, unc, 0)
-        
         samples_min_unc = np.delete(samples.flatten(), unc)
+        print("!!", _pre_image.shape)
+        print("!!", samples_min_unc.shape)
         _, pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
         _, image_tr, image_va, image_te = sample_split(image, samples_min_unc) # for smaller samples there is no noanalysis class
-        _, label_tr, label_va, label_te = sample_split(label, samples_min_unc)  
+        _, label_tr, label_va, label_te = sample_split(label, samples_min_unc)
 
 
         # pre_image_tr, pre_image_va, pre_image_te = sample_split(_pre_image, samples_min_unc)
@@ -202,11 +206,9 @@ for j, pre_image in enumerate(pre_images):
         save_zarr(pre_image_te, CITY, 'im_te_pre', path=DATA_DIR)
         save_zarr(image_te, CITY, 'im_te_post', path=DATA_DIR)
         save_zarr(label_te, CITY, 'la_te', path=DATA_DIR)
-        
 
         # save_zarr(image_tr, CITY, 'im_snn_tr_tt', path=DATA_DIR)
         # save_zarr(pre_image_tr, CITY, 'im_snn_tr_t0', path=DATA_DIR)
-                
 
 
 print("Sanity Check 1: Training")

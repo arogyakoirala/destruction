@@ -13,15 +13,15 @@ import matplotlib.pyplot as plt
 import time
 import shutil
 
-## For local
-# CITIES = ['aleppo', 'daraa']
-# OUTPUT_DIR = "../data/destr_outputs"
-# DATA_DIR = "../data/destr_data"
+# For local
+CITIES = ['aleppo']
+OUTPUT_DIR = "../data/destr_outputs"
+DATA_DIR = "../data/destr_data"
 
-## For artemisa
-CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
-OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
-DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
+# ## For artemisa
+# CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
+# OUTPUT_DIR = "/lustre/ific.uv.es/ml/iae091/outputs"
+# DATA_DIR = "/lustre/ific.uv.es/ml/iae091/data"
 
 ## For workstation
 # CITIES = ['aleppo', 'damascus', 'daraa', 'deir-ez-zor','hama', 'homs', 'idlib', 'raqqa']
