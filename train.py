@@ -281,28 +281,28 @@ def dense_block(inputs, units:int=1, dropout:float=0, name:str=''):
     tensor = layers.Dropout(rate=dropout, name=f'{name}_dropout')(tensor)
     return tensor 
 
-# def convolution_block(inputs, filters:int, dropout:float, name:str):
-#     tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution1')(inputs)
-#     tensor = layers.Activation('relu', name=f'{name}_activation1')(tensor)
-#     tensor = layers.BatchNormalization(name=f'{name}_normalisation1')(tensor)
-#     tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution2')(tensor)
-#     tensor = layers.Activation('relu', name=f'{name}_activation2')(tensor)
-#     tensor = layers.BatchNormalization(name=f'{name}_normalisation2')(tensor)
-#     tensor = layers.MaxPool2D(pool_size=(2, 2), name=f'{name}_pooling')(tensor)
-#     tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout')(tensor)
-#     return tensor
-
-def convolution_block(inputs, filters:int, dropout:float, name:str, n=1):
-    for i in range(n):
-        if i==0:
-            tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution{i+1}')(inputs)
-        else:
-            tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution{i+1}')(tensor)
-        tensor = layers.Activation('relu', name=f'{name}_activation{i+1}')(tensor)
-        tensor = layers.BatchNormalization(name=f'{name}_normalisation{i+1}')(tensor)
-        tensor = layers.MaxPooling2D(pool_size=(2, 2), name=f'{name}_pooling{i+1}')(tensor)
-        tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout{i+1}')(tensor)
+def convolution_block(inputs, filters:int, dropout:float, name:str):
+    tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution1')(inputs)
+    tensor = layers.Activation('relu', name=f'{name}_activation1')(tensor)
+    tensor = layers.BatchNormalization(name=f'{name}_normalisation1')(tensor)
+    tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution2')(tensor)
+    tensor = layers.Activation('relu', name=f'{name}_activation2')(tensor)
+    tensor = layers.BatchNormalization(name=f'{name}_normalisation2')(tensor)
+    tensor = layers.MaxPool2D(pool_size=(2, 2), name=f'{name}_pooling')(tensor)
+    tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout')(tensor)
     return tensor
+
+# def convolution_block(inputs, filters:int, dropout:float, name:str, n=1):
+#     for i in range(n):
+#         if i==0:
+#             tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution{i+1}')(inputs)
+#         else:
+#             tensor = layers.Conv2D(filters=filters, kernel_size=(3, 3), padding='same', use_bias=False, kernel_initializer='he_normal', name=f'{name}_convolution{i+1}')(tensor)
+#         tensor = layers.Activation('relu', name=f'{name}_activation{i+1}')(tensor)
+#         tensor = layers.BatchNormalization(name=f'{name}_normalisation{i+1}')(tensor)
+#         tensor = layers.MaxPooling2D(pool_size=(2, 2), name=f'{name}_pooling{i+1}')(tensor)
+#         tensor = layers.SpatialDropout2D(rate=dropout, name=f'{name}_dropout{i+1}')(tensor)
+#     return tensor
 
 def distance_layer(inputs):
     input0, input1 = inputs
@@ -312,24 +312,25 @@ def distance_layer(inputs):
 
 
 
-def encoder_block_separated(inputs, filters:int=1, dropout=0, n_convs=1, n_blocks=3, name:str=''):
-    for i in range(n_blocks):
-        if i == 0:
-            tensor  = convolution_block(inputs, filters=(filters*2)//(i+1), dropout=dropout, n=n_convs, name=f'{name}_block{i+1}')
-        else:
-            tensor  = convolution_block(tensor, filters=(filters*2)//(i+1), dropout=dropout, n=n_convs, name=f'{name}_block{i+1}')
-    outputs = layers.Flatten(name=f'{name}_flatten')(tensor)
+
+def encoder_block_separated(inputs, filters:int=1, dropout=0, n=1, name:str=''):	
+    tensor  = convolution_block(inputs, filters=filters*1, dropout=dropout, name=f'{name}_block1')	
+    tensor  = convolution_block(tensor, filters=filters*2, dropout=dropout, name=f'{name}_block2')	
+    tensor  = convolution_block(tensor, filters=filters*3, dropout=dropout, name=f'{name}_block3')	
+    tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, name=f'{name}_block4')	
+    tensor  = convolution_block(tensor, filters=filters*5, dropout=dropout, name=f'{name}_block5')	
+    outputs = layers.Flatten(name=f'{name}_flatten')(tensor)	
     return outputs
 
-def encoder_block_shared(shape:tuple, filters:int=1, n_convs=1, n_blocks=3, dropout=0):
-    inputs  = layers.Input(shape=shape, name='inputs'),
-    for i in range(n_blocks):
-        if i == 0:
-            tensor  = convolution_block(inputs, filters=(filters*2)//(i+1), dropout=dropout, n=n_convs, name=f'block{i+1}')
-        else:
-            tensor =  convolution_block(tensor, filters=(filters*2)//(i+1), dropout=dropout, n=n_convs, name=f'block{i+1}')
-    outputs = layers.GlobalAveragePooling2D(name='global_pooling')(tensor)
-    encoder = models.Model(inputs=inputs, outputs=outputs, name='encoder')
+def encoder_block_shared(shape:tuple, filters:int=1, n=1, dropout=0):	
+    inputs  = layers.Input(shape=shape, name='inputs')	
+    tensor  = convolution_block(inputs, filters=filters*1, dropout=dropout, name='block1')	
+    tensor  = convolution_block(tensor, filters=filters*2, dropout=dropout, name='block2')	
+    tensor  = convolution_block(tensor, filters=filters*3, dropout=dropout, name='block3')	
+    tensor  = convolution_block(tensor, filters=filters*4, dropout=dropout, name='block4')	
+    tensor  = convolution_block(tensor, filters=filters*5, dropout=dropout, name='block5')	
+    outputs = layers.GlobalAveragePooling2D(name='global_pooling')(tensor)	
+    encoder = models.Model(inputs=inputs, outputs=outputs, name='encoder')	
     return encoder
 
 
@@ -425,7 +426,7 @@ gen_tr = SiameseGenerator((im_tr_pre, im_tr_post), la_tr, batch_size=BATCH_SIZE)
 gen_va = SiameseGenerator((im_va_pre, im_va_post), la_va, batch_size=BATCH_SIZE)
 
 
-# print(gen_tr.__getitem__(10))
+print(gen_tr.__getitem__(10))
 
 indices = np.random.randint(0, im_tr_pre.shape[0]//32, 5)
 
@@ -487,7 +488,7 @@ if MODEL == 'snn':
     )
 
 if MODEL == 'double':
-    args_encode = dict(filters=filters, dropout=dropout, n_blocks=3, n_convs=2)
+    args_encode = dict(filters=filters, dropout=dropout)
     model = double_convolutional_network(
         shape=(*PATCH_SIZE, 3),  
         args_encode = args_encode,
